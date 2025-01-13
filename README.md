@@ -2,6 +2,7 @@
 A detailed folder of projects
 
 When adding a project, follow this organizational structure:
+'''
 /Project_Name
   ├── README.md
   ├── STL_Files/
@@ -13,3 +14,4 @@ When adding a project, follow this organizational structure:
   └── Other_Files/
         ├── data.csv
         ├── design.png
+'''
