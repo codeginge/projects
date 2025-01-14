@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Skateboarding Game</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
+</head>
+<body>
+  <script>
+    let score = 0;
+    let trickDeck = [
+      "Nollie", "Fakie", "Switch", "Manual", "Nose Manual", "Casper", 
+      "Boneless", "Ollie", "Pop Shove-it", "Shove-it", "Old School Kickflip", "Rail Stall",
+      "360 Pop Shove-it", "360 Shove-it", "Kickflip", "Variable flip", "Heelflip",
+      "360 flip", "Hardflip", "Inward Heelflip", "Laserflip", "Hospital Flip", 
+      "Dolphin Flip", "Impossible"
+    ];
+    let currentTrick = "";
+    let tries = 0;
+
+    function setup() {
+      createCanvas(400, 200);
+      textAlign(CENTER, CENTER);
+      textSize(20);
+      drawTrick();
+    }
+
+    function draw() {
+      background(220);
+      text("Current Trick: " + currentTrick, width / 2, height / 2 - 20);
+      text("Tries left: " + (3 - tries), width / 2, height / 2 + 20);
+      text("Score: " + score, width / 2, height - 20);
+    }
+
+    function drawTrick() {
+      currentTrick = random(trickDeck);
+      tries = 0;
+    }
+
+    function mouseClicked() {
+      if (tries < 3) {
+        // Simulate landing the trick by deducting points
+        score += random(50, 150); // Add random points
+        tries++;
+      } else {
+        drawTrick(); // Get a new trick after three tries
+      }
+    }
+  </script>
+</body>
+</html>
