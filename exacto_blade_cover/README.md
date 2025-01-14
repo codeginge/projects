@@ -1,0 +1,1 @@
+This is the exacto blade cover project to create a exacto blade cover that can be printed on an ender 3 printer. There are two versions of this design. One with a clip and one without depending on your needs.
