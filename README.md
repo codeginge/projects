@@ -2,15 +2,15 @@
 
 When adding a project, follow this organizational structure:
 ```
-/Project_Name
+/project_name
   ├── README.md
-  ├── DESIGN_Files/
+  ├── design/                 
   │     ├── part1.stl
   │     ├── part2.stl
-  ├── Docs/
+  ├── docs/
   │     ├── instructions.pdf
   │     ├── overview.md
-  └── Other_Files/
+  └── other/
         ├── data.csv
         ├── design.png
 ```
