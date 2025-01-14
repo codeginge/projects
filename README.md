@@ -4,7 +4,7 @@ When adding a project, follow this organizational structure:
 ```
 /Project_Name
   ├── README.md
-  ├── STL_Files/
+  ├── DESIGN_Files/
   │     ├── part1.stl
   │     ├── part2.stl
   ├── Docs/
