@@ -6,7 +6,7 @@ When adding a project, follow this organizational structure:
   ├── README.md
   ├── design/                 
   │     ├── part1.stl
-  │     ├── part2.stl
+  │     ├── part2.dxf
   ├── docs/
   │     ├── instructions.pdf
   │     ├── overview.md
