@@ -1,5 +1,4 @@
 # projects
-A detailed folder of projects
 
 When adding a project, follow this organizational structure:
 ```
