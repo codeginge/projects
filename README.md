@@ -10,6 +10,8 @@ When adding a project, follow this organizational structure:
   ├── docs/
   │     ├── instructions.pdf
   │     ├── overview.md
+  ├── code/
+  │     ├── run.py
   └── other/
         ├── data.csv
         ├── design.png
