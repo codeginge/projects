@@ -3,15 +3,16 @@ OVERVIEW: this code creates a visual tech (technology) tree for techs learned in
 and organizes them based on their dependent techs. this code will:
 
 1. opens a google sheet with this data structure:
-|--name--|--type--|--difficulty--|--letter--|--num--|--id--|--depends--|--notes--|
+|--name--|--type--|--sub_type--|--difficulty--|--letter--|--num--|--id--|--depends--|--notes--|
 
-2. creates a json file from the goolge sheet with this data stucture:
+2. creates a json data set from the goolge sheet with this data stucture:
 
 "robotics/other/techs.json"
 [
 	{
 		"name":"Light - LED", 
 		"type":"actuators", 
+        "sub_type":"light", 
 		"difficulty":1,
 		"id":"a1_01", 
 		"depends":["c1_01","c1_02","c1_03"],
@@ -20,6 +21,7 @@ and organizes them based on their dependent techs. this code will:
 	{
 		"name":"Barometric Pressure and Temperature - BMP280", 
 		"type":"sensors", 
+        "subtype":"temp", 
 		"difficulty":2,
 		"id":"s2_02", 
 		"dependent_on":["s1","s1_10","s1_11","s1_05"],
@@ -27,76 +29,112 @@ and organizes them based on their dependent techs. this code will:
 	}
 ]
 
-3. sorts the technologies by difficulty, then type, and then by dependencies. 
+3. sorts the technologies by type and then by dependencies. 
 
-4. creates a tech tree visual from the dependency sorted list and outputs it in 
+4. creates a tech tree visual from the dependency sorted list and outputs it as a .png file in ../other
 
 
 Example CMD:
-python3 -m venv myenv && source myenv/bin/activate && pip install graphviz && pip show graphviz
+python3 -m venv myenv && source myenv/bin/activate && pip install graphviz && pip show graphviz && pip install gspread google-auth
 python3 ./tech_tree.py ../../../../Downloads/circuits_tech_tree-techDataSheet.csv ../other/techs.json
 """
+import gspread
+from google.oauth2.service_account import Credentials
 import csv
 import json
 import argparse
 from graphviz import Digraph
 
+
 # Set up argument parsing to accept both CSV file path and JSON output file name
 parser = argparse.ArgumentParser(description="Convert Arduino Tech Tree CSV to JSON format.")
-parser.add_argument("csv_file", help="Path to the CSV file")
-parser.add_argument("json_file", help="Path to the output JSON file")
+parser.add_argument("google_creds", help="path to the google json api key")
+parser.add_argument("sheet_id", help="google sheet id")
+parser.add_argument("sheet_name", help="google sheet name")
+#parser.add_argument("output_filename", help="output file name")
+
 args = parser.parse_args()
+# Accessing the arguments
+google_creds = args.google_creds
+sheet_id = args.sheet_id
+sheet_name = args.sheet_name
+#output_filename = args.output_filename
 
-# Path to the CSV file and output JSON file passed via command line
-csv_file_path = args.csv_file
-json_file_path = args.json_file
-
-# Open and read the CSV file
-formatted_data = []
-
-with open(csv_file_path, mode='r', newline='', encoding='utf-8') as csv_file:
-    csv_reader = csv.DictReader(csv_file)  # Read the CSV as a dictionary
+# pull current sheet from google
+def access_google_sheet(json_key_path, sheet_id, sheet_name):
+    """
+    Fetches and returns Google Sheet data as a structured JSON list.
     
-    # Skip the first row (filename row)
-    next(csv_file)
-    
-    # Ensure the 'depends' column exists
-    if 'depends' not in csv_reader.fieldnames:
-        print("Warning: 'depends' column is missing in the CSV file.")
-    
-    for row in csv_reader:
-        # Safely handle the "depends" column (space-separated values)
-        depends = []
-        if 'depends' in row and row['depends']:  # Check if 'depends' column exists and is not empty
-            depends = [dep.strip() for dep in row["depends"].split()]
-        
-        # Format the data into the desired structure
-        formatted_data.append({
-            "name": row.get("name", ""),
-            "type": row.get("type", ""),
-            "difficulty": int(row.get("difficulty", "0").split("_")[0]),  # Default to 0 if missing
-            "id": f"{row.get('letter', '')}_{row.get('num', '')}",
-            "depends": depends,  # Now depends is a list from the space-separated values
-            "notes": row.get("notes", "")
-        })
+    :param json_key_path: Path to Google service account JSON key file.
+    :param sheet_id: The ID of the Google Sheet (from the URL).
+    :param sheet_name: The name of the sheet/tab inside the spreadsheet.
+    :return: List of dictionaries representing sheet data in the desired format.
+    """
+    # Define scope
+    scopes = ["https://www.googleapis.com/auth/spreadsheets.readonly"]
 
-# Output the data to the specified JSON file
-with open(json_file_path, "w") as json_file:
-    json.dump(formatted_data, json_file, indent=4)
+    # Authenticate using service account file
+    creds = Credentials.from_service_account_file(json_key_path, scopes=scopes)
+    client = gspread.authorize(creds)
 
-print(f"Data has been written to {json_file_path}")
+    # Open the Google Sheet by ID and select the sheet
+    worksheet = client.open_by_key(sheet_id).worksheet(sheet_name)
+
+    # Get all data as a list of lists
+    raw_data = worksheet.get_all_values()
+
+    # Extract headers from the first row
+    headers = raw_data[1]
+
+    # Print the headers for debugging
+    print("Headers in the sheet:", headers)
+
+    # Convert sheet data into a list of dictionaries
+    json_data = []
+    for row in raw_data[2:]:  # Skip header row
+        entry = dict(zip(headers, row))
+
+        # Convert 'difficulty' to an integer based on the prefix number
+        if "difficulty" in entry:
+            difficulty_value = entry["difficulty"]
+            # Extract the number from the difficulty string
+            if "_" in difficulty_value:
+                entry["difficulty"] = int(difficulty_value.split("_")[0])  # Get the number part
+            else:
+                entry["difficulty"] = None  # In case the difficulty is not in the expected format
+        else:
+            entry["difficulty"] = None  # Handle missing difficulty gracefully
+
+        # Convert 'depends' to a list (split by commas and strip spaces)
+        if "depends" in entry:
+            entry["depends"] = [dep.strip() for dep in entry["depends"].split(" ") if dep.strip()]
+        else:
+            entry["depends"] = []  # Handle missing depends gracefully
+
+        # Set the output JSON structure
+        formatted_entry = {
+            "name": entry.get("name", ""),
+            "type": entry.get("type", ""),
+            "sub_type": entry.get("sub_type", ""),
+            "difficulty": entry.get("difficulty", None),
+            "id": entry.get("id", ""),
+            "depends": entry.get("depends", []),
+            "notes": entry.get("notes", "")
+        }
+
+        # Add formatted entry to the JSON data list
+        json_data.append(formatted_entry)
+    # DEBUG print(json.dumps(json_data, indent=4))
+    return json_data
 
 
-def create_flowchart(data, output_file):
+def create_flowchart_depends(data, output_file):
     # Initialize the graph
     dot = Digraph(format="png")
     dot.attr(rankdir="TB")  # Top-to-bottom layout
     dot.attr("node", shape="box", style="filled", fontname="Arial")
     dot.attr(splines="false")  # Disable curved edges, force straight lines
-
-    # Set the separation values to avoid overlap but keep things closer
-    dot.attr(ranksep="0.6")  # Decrease vertical distance between ranks (levels)
-    dot.attr(nodesep="0.3")  # Decrease horizontal space between nodes
+    dot.attr(ranksep="0.6", nodesep="0.3")  # Keep nodes closer without overlapping
 
     # Define colors for each type
     type_colors = {
@@ -105,58 +143,31 @@ def create_flowchart(data, output_file):
         "programming": "lightyellow",
         "wiring": "lightseagreen",
         "circuit_knowledge": "lightpink",
-        # Add more types and their respective colors as needed
     }
 
-    # Group nodes by difficulty and type
-    difficulty_groups = {1: {}, 2: {}, 3: {}}
+    # Group nodes by type
+    type_groups = {}
     for item in data:
-        difficulty = item["difficulty"]
-        item_type = item["type"]
-        
-        # Create a dictionary for each difficulty with item types as the key
-        if item_type not in difficulty_groups[difficulty]:
-            difficulty_groups[difficulty][item_type] = []
-        
-        difficulty_groups[difficulty][item_type].append(item)
+        type_groups.setdefault(item["type"], []).append(item)
 
-    # Add nodes grouped by difficulty and enforce vertical stacking
-    for difficulty in range(1, 4):  # Explicitly iterate over difficulties 1, 2, 3
-        items = []
-        for item_type, type_items in difficulty_groups[difficulty].items():
-            # Choose color based on item type
-            type_color = type_colors.get(item_type, "lightgray")  # Default to lightgray if no color defined
-
-            with dot.subgraph() as sub:
-                sub.attr(rank="same")  # Enforce same rank for all nodes in this difficulty level
-                sub.attr(labeljust="c")  # Center align the types horizontally
-                sub.attr(style="dashed")  # Add dashed style to indicate separation
-
-                # Add each node with the fillcolor applied to the node individually
-                for item in type_items:
-                    # Set a reasonable width and height for nodes
-                    sub.node(item["id"], f'{item["name"]}\n({item["id"]})', fillcolor=type_color, width="1", height="0.4")
-                items.extend(type_items)
-
-        # Add dependencies between same type difficulty levels with invisible arrows
-        if difficulty > 1:  # If difficulty is 2 or 3, add dependencies to previous level
+    # Add clusters for each type with a bold, larger title
+    for type_name, items in type_groups.items():
+        with dot.subgraph(name=f'cluster_{type_name}') as sub:
+            sub.attr(label=f'<<B><FONT POINT-SIZE="50">{type_name}</FONT></B>>', fontname="Arial", style="dashed")
             for item in items:
-                for prev_item in difficulty_groups[difficulty - 1].get(item["type"], []):
-                    dot.edge(prev_item["id"], item["id"], style="invisible", dir="none", minlen="1.5", weight="0")  # Invisible edge with no arrowhead
+                type_color = type_colors.get(item["type"], "lightgray")  # Default to lightgray
+                sub.node(item["id"], f'{item["name"]}\n({item["id"]})', fillcolor=type_color, width="1", height="0.4")
 
-    # Add edges for the visible dependencies from JSON data (these should be shown)
+    # Ensure dependent nodes appear **below** their dependencies
     for item in data:
         for dependency in item["depends"]:
-            dot.edge(dependency, item["id"], minlen="1.5", weight="1")  # Regular visible edges with space between nodes
+            dot.edge(dependency, item["id"], constraint="true", minlen="1")  # Forces vertical placement
 
     # Save and render the graph
-    dot.render(output_file, cleanup=True)
+    dot.render(f'../other/{output_file}', cleanup=True)
     print(f"Flowchart saved to {output_file}.png")
 
 
 
-
-
 # Create the flowchart
-flowchart_filename = "../other/techTree"
-create_flowchart(formatted_data,flowchart_filename)
+create_flowchart_depends(access_google_sheet(google_creds, sheet_id, sheet_name),sheet_name)
