@@ -1,0 +1,1 @@
+this project aims to create a tech tree from a google sheet to give a flow chart visualization of learning for any subject.

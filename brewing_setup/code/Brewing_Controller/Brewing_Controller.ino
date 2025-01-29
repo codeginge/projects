@@ -21,13 +21,14 @@ float pidD = 0.1;
 const int pumpSwitchPin = 8;  // D3
 const int heaterSwitchPin = 4; // D4
 const int heaterRelayPin = 5;  // D5 for SSR
+const int pumpRelayPin = 12;  // D5 for SSR
 
 // Analog Input Pins for PID and control
 const int pidDPin = A0;  // D for PID
 const int pidIPin = A1;  // I for PID
 const int pidPPin = A2;  // P for PID
 const int powerPin = A3; // Power control
-const int tempPin = A6;  // Desired temperature control
+const int tempPin = A7;  // Desired temperature control
 
 // Pin for DS18B20 temperature probe
 const int oneWireBus = 2; // D2
@@ -43,7 +44,9 @@ void setup() {
   pinMode(pumpSwitchPin, INPUT_PULLUP);  // Use internal pull-up resistor
   pinMode(heaterSwitchPin, INPUT_PULLUP); // Use internal pull-up resistor
   pinMode(heaterRelayPin, OUTPUT);       // Output to SSR
+  pinMode(pumpRelayPin, OUTPUT);       // Output to SSR
   analogWrite(heaterRelayPin, 0);        // Ensure heater is off initially
+  digitalWrite(pumpRelayPin,LOW);
 
   // Start DS18B20 sensor
   sensors.begin();
@@ -74,12 +77,20 @@ void loop() {
   sensors.requestTemperatures();
   currentTemp = sensors.getTempFByIndex(0); // Read temperature in Fahrenheit from the first sensor
   Serial.println(currentTemp);
+
   // Control the SSR using PWM only if heater is ON
   if (heaterOn) {
     int pwmValue = map(power, 0, 100, 0, 255);  // Map 0-100 power to 0-255 PWM range
     analogWrite(heaterRelayPin, pwmValue);
   } else {
     analogWrite(heaterRelayPin, 0);  // Turn off SSR if heater is OFF
+  }
+
+  // turn on pump SSR only if pump is ON
+  if (pumpOn) {
+    digitalWrite(pumpRelayPin, HIGH);
+  } else {
+    digitalWrite(pumpRelayPin, LOW);  // Turn off SSR if heater is OFF
   }
 
 // Line 0: Display name of brewery (20 characters)
