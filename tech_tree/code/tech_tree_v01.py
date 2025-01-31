@@ -28,90 +28,60 @@ sheet_id = args.sheet_id
 sheet_name = args.sheet_name
 #output_filename = args.output_filename
 
-
+# pull sheet from google
 def access_google_sheet(json_key_path, sheet_id, sheet_name):
     """
     Fetches and returns Google Sheet data as a structured JSON list.
-    If an entry lacks an ID, it generates one that does not conflict with existing IDs.
     
     :param json_key_path: Path to Google service account JSON key file.
     :param sheet_id: The ID of the Google Sheet (from the URL).
     :param sheet_name: The name of the sheet/tab inside the spreadsheet.
     :return: List of dictionaries representing sheet data in the desired format.
     """
+    # Define scope
+    scopes = ["https://www.googleapis.com/auth/spreadsheets.readonly"]
 
-    creds = Credentials.from_service_account_file(json_key_path, scopes=["https://www.googleapis.com/auth/spreadsheets"])
+    # Authenticate using service account file
+    creds = Credentials.from_service_account_file(json_key_path, scopes=scopes)
     client = gspread.authorize(creds)
 
-    # Open the Google Sheet and select the worksheet
+    # Open the Google Sheet by ID and select the sheet
     worksheet = client.open_by_key(sheet_id).worksheet(sheet_name)
 
     # Get all data as a list of lists
     raw_data = worksheet.get_all_values()
 
     # Extract headers from the first row
-    headers = raw_data[1]  # Assuming the second row contains headers
-    id_col_index = headers.index("id") + 1  # Find index of the "id" column (1-based for Google Sheets)
-    core_col_index = headers.index("core") + 1  # Find index of the "core" column (1-based)
+    headers = raw_data[1]
 
-    # Get existing IDs to prevent conflicts
-    existing_ids = set(row[id_col_index - 1] for row in raw_data[2:] if row[id_col_index - 1])  # Get non-empty IDs
+    # Print the headers for debugging
+    print("Headers in the sheet:", headers)
 
     # Convert sheet data into a list of dictionaries
     json_data = []
-    type_counters = {}  # Track sequence numbers for each type
-    updates = []  # Store batch updates (cell range, value)
-
-    for i, row in enumerate(raw_data[2:], start=3):  # Skip header row (1-based index)
+    for row in raw_data[2:]:  # Skip header row
         entry = dict(zip(headers, row))
 
-        # Convert 'dependency' to a list (split by spaces and strip spaces)
-        entry["dependency"] = [dep.strip() for dep in entry.get("dependency", "").split(" ") if dep.strip()]
-
-        # Check if 'core' is empty or 'x', set it accordingly
-        core_value = row[core_col_index - 1].strip()  # Get the value from the "core" column
-        entry["core"] = True if core_value.lower() == "x" else False
-
-        # Generate ID if missing
-        if not entry.get("id"):
-            type_prefix = entry["type"][:3].upper()  # First 3 letters of type
-            num = type_counters.get(type_prefix, 0) + 1
-            new_id = f"{type_prefix}{num:03d}"
-
-            # Ensure ID is unique
-            while new_id in existing_ids:
-                num += 1
-                new_id = f"{type_prefix}{num:03d}"
-
-            # Assign final unique ID
-            entry["id"] = new_id
-            existing_ids.add(new_id)  # Add to existing IDs to avoid future conflicts
-            type_counters[type_prefix] = num  # Update counter for this type
-
-            # Store update for batch processing
-            cell_range = f"{chr(64 + id_col_index)}{i}"  # Convert to A1 notation (e.g., "C4")
-            updates.append({"range": cell_range, "values": [[new_id]]})
+        # Convert 'dependency' to a list (split by commas and strip spaces)
+        if "dependency" in entry:
+            entry["dependency"] = [dep.strip() for dep in entry["dependency"].split(" ") if dep.strip()]
+        else:
+            entry["dependency"] = []  # Handle missing dependency gracefully
 
         # Set the output JSON structure
         formatted_entry = {
             "name": entry.get("name", ""),
             "type": entry.get("type", ""),
             "sub_type": entry.get("sub_type", ""),
-            "id": entry["id"],
+            "id": entry.get("id", ""),
             "dependency": entry.get("dependency", []),
-            "notes": entry.get("notes", ""),
-            "core": entry["core"]  # Add the 'core' data point
+            "notes": entry.get("notes", "")
         }
 
         # Add formatted entry to the JSON data list
         json_data.append(formatted_entry)
-
-    # Batch update the sheet with new IDs (only if there are updates)
-    if updates:
-        worksheet.batch_update(updates)  # More efficient than update_cell()
     print(json.dumps(json_data, indent=4))
     return json_data
-
 
 
 def create_flowchart_dependency(data, output_file):
