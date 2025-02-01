@@ -7,11 +7,12 @@ python3 -m venv myenv
 source myenv/bin/activate 
 pip install graphviz gspread gspread-formatting google-auth google-api-python-client google-auth-httplib2 google-auth-oauthlib
 pip show graphviz
-python3 ./tech_tree.py <path_to_google_api_credentials>.json <google_sheet_id> userAction
+python3 ./tech_tree.py <path_to_google_api_credentials>.json <google_sheet> userAction
 """
 import gspread
 from google.oauth2.service_account import Credentials
 from googleapiclient.discovery import build
+from googleapiclient.errors import HttpError
 import json
 import argparse
 from graphviz import Digraph
@@ -222,6 +223,7 @@ def create_resources_sheet(json_key_path, sheet_id, json_data):
     for entry in json_data:
         resource_id = entry.get("id", "")
         if resource_id not in existing_ids_in_sheet:
+            doc_link = create_formatted_doc_in_subfolder(drive_service, docs_service, sheet_id, "Resoureces", title, subtitle)
             row = [
                 entry.get("name", ""),  # name
                 resource_id,  # id
@@ -243,66 +245,157 @@ def create_resources_sheet(json_key_path, sheet_id, json_data):
         print("No entries added.")
 
 
-def create_doc_in_subfolder(sheet_id, subfolder_name, doc_content):
+def create_formatted_doc_in_subfolder(drive_service, docs_service, sheet_id, subfolder_name, title, subtitle):
     """
-    Create a Google Doc in a subfolder of the folder containing the given Google Sheet,
-    set the content of the document, and make it sharable to anyone with the link.
-    
-    :param sheet_id: The ID of the Google Sheet
-    :param subfolder_name: The name of the subfolder to create inside the sheet's folder
-    :param doc_content: The content to set in the Google Doc
-    :return: A sharable link to the created Google Doc
+    Creates a formatted Google Doc in a subfolder of the folder containing a given Google Sheet.
+    - If the subfolder exists, it is used; otherwise, a new one is created.
+    - If a document with the same title already exists in the subfolder, it is reused instead of creating a new one.
+    - The document is formatted with a title, subtitle, headers, regular text, and tables.
+    - The document is made sharable to anyone with the link.
+
+    :param drive_service: Authenticated Google Drive API service.
+    :param docs_service: Authenticated Google Docs API service.
+    :param sheet_id: The ID of the Google Sheet.
+    :param subfolder_name: The name of the subfolder to create (or use) inside the sheet's folder.
+    :param title: The title of the document.
+    :param subtitle: The subtitle of the document.
+    :return: Sharable link to the created or existing Google Doc.
     """
 
+    # THIS IS THE DOCUMENT TEMPLATE
+    content = [
+    ("Overview", "Brief description of this learning objective and how it connects to the overall learning objective of the class."),
+    ("Resoureces", "Internal or external resources to guide the student on their learning path. Should be enough information for students to complete all projects with."),
+    ("Project Template", "Include driving question, project objectives, specific deliverables and milestones towards completion.")
+    ]
+    table_data = [
+        ["Criteria", "Description", "Points(1-3)"],
+        ["Understanding", "Can you describe what is happening using technical vocabulary? Can you explain this vocabulary to a 5th grader?", ""],
+        ["Application", "Have you applied this knowledge in your project? Does it work? Does it work every time?", ""],
+        ["Organization", "Have you kept you project organized? Was this thrown together or does each part have a place and a purpose?", ""]
+    ]
     try:
-        # Get the Google Sheet's file metadata to find its parent folder
+        # Step 1: Get the Google Sheet's parent folder
         sheet_metadata = drive_service.files().get(fileId=sheet_id, fields='parents').execute()
         parent_folder_id = sheet_metadata['parents'][0]
 
-        # Create the subfolder inside the parent folder ### TODO modify to work if folder already exists ###
-        folder_metadata = {
-            'name': subfolder_name,
-            'mimeType': 'application/vnd.google-apps.folder',
-            'parents': [parent_folder_id]
-        }
-        subfolder = drive_service.files().create(body=folder_metadata, fields='id').execute()
-        subfolder_id = subfolder['id']
-        print(f"Created subfolder with ID: {subfolder_id}")
+        # Step 2: Check if the subfolder already exists
+        query = f"'{parent_folder_id}' in parents and mimeType='application/vnd.google-apps.folder' and name='{subfolder_name}'"
+        existing_folders = drive_service.files().list(q=query, fields="files(id)").execute().get('files', [])
 
-        # Create the Google Doc inside the new subfolder
-        document = docs_service.documents().create().execute()
-        document_id = document['documentId']
-        print(f"Created Google Doc with ID: {document_id}")
-
-        # Move the Google Doc into the subfolder
-        file_metadata = {
-            'addParents': subfolder_id
-        }
-        drive_service.files().update(fileId=document_id, addParents=subfolder_id).execute()
-
-        # Set the content of the Google Doc (simple text for this example)
-        requests = [
-            {
-                'insertText': {
-                    'location': {
-                        'index': 1
-                    },
-                    'text': doc_content
-                }
+        if existing_folders:
+            subfolder_id = existing_folders[0]['id']
+            print(f"Using existing subfolder: {subfolder_id}")
+        else:
+            # Create a new subfolder
+            folder_metadata = {
+                'name': subfolder_name,
+                'mimeType': 'application/vnd.google-apps.folder',
+                'parents': [parent_folder_id]
             }
-        ]
-        docs_service.documents().batchUpdate(documentId=document_id, body={'requests': requests}).execute()
+            subfolder = drive_service.files().create(body=folder_metadata, fields='id').execute()
+            subfolder_id = subfolder['id']
+            print(f"Created new subfolder: {subfolder_id}")
 
-        # Make the document sharable to anyone with the link
-        permission = {
-            'type': 'anyone',
-            'role': 'reader',
-        }
-        drive_service.permissions().create(fileId=document_id, body=permission).execute()
+        # Step 3: Check if a document with the same title already exists in the subfolder
+        query = f"'{subfolder_id}' in parents and mimeType='application/vnd.google-apps.document' and name='{title}'"
+        existing_docs = drive_service.files().list(q=query, fields="files(id, name)").execute().get('files', [])
 
-        # Generate the sharable link
-        sharable_link = f"https://docs.google.com/document/d/{document_id}/edit"
-        return sharable_link
+        if existing_docs:
+            doc_id = existing_docs[0]['id']
+            print(f"Document '{title}' already exists with ID: {doc_id}")
+        else:
+            # Step 4: Create a new Google Doc
+            doc_metadata = {'title': title}
+            document = docs_service.documents().create(body=doc_metadata).execute()
+            doc_id = document['documentId']
+            print(f"Created Google Doc with ID: {doc_id}")
+
+            # Move the document into the subfolder
+            drive_service.files().update(fileId=doc_id, addParents=subfolder_id).execute()
+
+            # Step 5: Format the document
+            requests = []
+
+            # Add Title
+            requests.append({
+                "insertText": {"location": {"index": 1}, "text": title + "\n"}
+            })
+            requests.append({
+                "updateParagraphStyle": {
+                    "range": {"startIndex": 1, "endIndex": len(title) + 2},
+                    "paragraphStyle": {"namedStyleType": "TITLE"},
+                    "fields": "namedStyleType"
+                }
+            })
+
+            # Add Subtitle
+            title_length = len(title) + 2
+            requests.append({
+                "insertText": {"location": {"index": title_length}, "text": subtitle + "\n\n"}
+            })
+            requests.append({
+                "updateParagraphStyle": {
+                    "range": {"startIndex": title_length, "endIndex": title_length + len(subtitle) + 2},
+                    "paragraphStyle": {"namedStyleType": "SUBTITLE"},
+                    "fields": "namedStyleType"
+                }
+            })
+
+            # Add Headers & Paragraphs
+            cursor_index = title_length + len(subtitle) + 2
+            for header, paragraph in content:
+                requests.append({
+                    "insertText": {"location": {"index": cursor_index}, "text": header + "\n"}
+                })
+                requests.append({
+                    "updateParagraphStyle": {
+                        "range": {"startIndex": cursor_index, "endIndex": cursor_index + len(header) + 1},
+                        "paragraphStyle": {"namedStyleType": "HEADING_3"},
+                        "fields": "namedStyleType"
+                    }
+                })
+                cursor_index += len(header) + 1
+
+                requests.append({
+                    "insertText": {"location": {"index": cursor_index}, "text": paragraph + "\n\n"}
+                })
+                cursor_index += len(paragraph) + 2
+
+            # Add Table
+            num_rows = len(table_data)
+            num_cols = len(table_data[0]) if num_rows > 0 else 0
+
+            if num_rows > 0:
+                requests.append({
+                    "insertTable": {
+                        "rows": num_rows,
+                        "columns": num_cols,
+                        "location": {"index": cursor_index}
+                    }
+                })
+                cursor_index += 1
+
+                cell_index = cursor_index
+                for row in table_data:
+                    for cell in row:
+                        requests.append({
+                            "insertText": {"location": {"index": cell_index}, "text": cell}
+                        })
+                        cell_index += len(cell) + 1
+
+            # Execute Batch Update
+            docs_service.documents().batchUpdate(documentId=doc_id, body={"requests": requests}).execute()
+
+            print(f"Formatted Google Doc: {doc_id}")
+
+        # Step 6: Make the document sharable to anyone with the link
+        permission = {'type': 'anyone', 'role': 'reader'}
+        drive_service.permissions().create(fileId=doc_id, body=permission, fields="id").execute()
+
+        # Step 7: Return Sharable Link
+        doc_link = f"https://docs.google.com/document/d/{doc_id}/edit"
+        return doc_link
 
     except HttpError as error:
         print(f"An error occurred: {error}")
