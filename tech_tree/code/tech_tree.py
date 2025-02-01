@@ -7,7 +7,7 @@ python3 -m venv myenv
 source myenv/bin/activate 
 pip install graphviz gspread gspread-formatting google-auth google-api-python-client google-auth-httplib2 google-auth-oauthlib
 pip show graphviz
-python3 ./tech_tree.py <path_to_google_api_credentials>.json 1jsw_BTPNgku8-XRadRK4nHgwc9CFON3jEGIzF40uOPg userAction
+python3 ./tech_tree.py <path_to_google_api_credentials>.json <google_sheet_id> userAction
 """
 import gspread
 from google.oauth2.service_account import Credentials
