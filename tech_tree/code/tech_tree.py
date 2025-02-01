@@ -3,40 +3,41 @@ OVERVIEW: this code creates a visual tech (technology) tree for techs learned in
 and organizes them based on their dependent techs. this code will:
 
 Example CMD:
-python3 -m venv myenv && source myenv/bin/activate && pip install graphviz && pip show graphviz && pip install gspread google-auth
-python3 ./tech_tree.py ../../../../Downloads/circuits_tech_tree-techDataSheet.csv ../other/techs.json
+python3 -m venv myenv
+source myenv/bin/activate 
+pip install graphviz gspread gspread-formatting google-auth google-api-python-client google-auth-httplib2 google-auth-oauthlib
+pip show graphviz
+python3 ./tech_tree.py <path_to_google_api_credentials>.json 1jsw_BTPNgku8-XRadRK4nHgwc9CFON3jEGIzF40uOPg userAction
 """
 import gspread
 from google.oauth2.service_account import Credentials
-import csv
+from googleapiclient.discovery import build
 import json
 import argparse
 from graphviz import Digraph
+from gspread_formatting import *
 
 
 # Set up argument parsing to accept both CSV file path and JSON output file name
 parser = argparse.ArgumentParser(description="Convert Arduino Tech Tree CSV to JSON format.")
 parser.add_argument("google_creds", help="path to the google json api key")
 parser.add_argument("sheet_id", help="google sheet id")
-parser.add_argument("sheet_name", help="google sheet name")
-#parser.add_argument("output_filename", help="output file name")
-
+parser.add_argument("userAction", help="options: buildTechnologies buildResources")
 args = parser.parse_args()
+
 # Accessing the arguments
 google_creds = args.google_creds
 sheet_id = args.sheet_id
-sheet_name = args.sheet_name
-#output_filename = args.output_filename
+userAction = args.userAction
 
 
-def access_google_sheet(json_key_path, sheet_id, sheet_name):
+def pull_techs_from_google_sheet(json_key_path, sheet_id):
     """
     Fetches and returns Google Sheet data as a structured JSON list.
     If an entry lacks an ID, it generates one that does not conflict with existing IDs.
     
     :param json_key_path: Path to Google service account JSON key file.
     :param sheet_id: The ID of the Google Sheet (from the URL).
-    :param sheet_name: The name of the sheet/tab inside the spreadsheet.
     :return: List of dictionaries representing sheet data in the desired format.
     """
 
@@ -44,7 +45,7 @@ def access_google_sheet(json_key_path, sheet_id, sheet_name):
     client = gspread.authorize(creds)
 
     # Open the Google Sheet and select the worksheet
-    worksheet = client.open_by_key(sheet_id).worksheet(sheet_name)
+    worksheet = client.open_by_key(sheet_id).worksheet("techs")
 
     # Get all data as a list of lists
     raw_data = worksheet.get_all_values()
@@ -109,9 +110,8 @@ def access_google_sheet(json_key_path, sheet_id, sheet_name):
     # Batch update the sheet with new IDs (only if there are updates)
     if updates:
         worksheet.batch_update(updates)  # More efficient than update_cell()
-    print(json.dumps(json_data, indent=4))
+    # DEBUG print(json.dumps(json_data, indent=4))
     return json_data
-
 
 
 def create_flowchart_dependency(data, output_file):
@@ -154,6 +154,168 @@ def create_flowchart_dependency(data, output_file):
     print(f"Flowchart saved to {output_file}.png")
 
 
+def create_resources_sheet(json_key_path, sheet_id, json_data):
+    """
+    Creates or clears a 'resources' sheet in the given Google Sheet 
+    and populates it with JSON data, including a formatted title row.
+    Ensures no duplication of rows based on 'id', removes rows with 
+    IDs not present in the current JSON data, and prints added/removed resources.
 
-# Create the flowchart
-create_flowchart_dependency(access_google_sheet(google_creds, sheet_id, sheet_name),sheet_name)
+    :param json_key_path: Path to Google service account JSON key file.
+    :param sheet_id: The ID of the Google Sheet (from the URL).
+    :param json_data: List of dictionaries containing resource data.
+    """
+
+    # Authenticate with Google Sheets, Docs and Drive API
+    scopes = ["https://www.googleapis.com/auth/spreadsheets",
+        "https://www.googleapis.com/auth/drive",
+        "https://www.googleapis.com/auth/documents"]
+    creds = Credentials.from_service_account_file(json_key_path, scopes=scopes)
+    client = gspread.authorize(creds)
+    drive_service = build('drive', 'v3', credentials=creds)
+    docs_service = build('docs', 'v1', credentials=creds)
+
+    # Open the Google Sheet by ID
+    spreadsheet = client.open_by_key(sheet_id)
+
+    # Create or select the 'resources' sheet
+    try:
+        worksheet = spreadsheet.worksheet("resources")
+    except gspread.exceptions.WorksheetNotFound:
+        worksheet = spreadsheet.add_worksheet(title="resources", rows="100", cols="10")
+    
+    # Define headers
+    headers = ["name", "id", "doc_link", "project_point_values", "points_required", "core"]
+
+    # Check if the header already exists, and if not, insert it
+    headers_exist = headers==worksheet.row_values(2)  # Check if headers are in row 2 (where they should be)
+    if not headers_exist:
+        # Insert title row
+        worksheet.insert_row(["RESOURCES"], index=1)  # First row for merged title
+        worksheet.insert_row(headers, index=2)  # Second row for headers
+        # Freeze the first two rows
+        worksheet.freeze(rows=2)
+
+    # Get all rows in the sheet, excluding the header
+    all_rows = worksheet.get_all_values()[2:]  # Exclude title and header
+    existing_ids = {row[1]: row_num + 3 for row_num, row in enumerate(all_rows)}  # Map id to row number (index 3 onward)
+
+    # Get list of IDs from the JSON data
+    json_ids = {entry.get("id", "") for entry in json_data}
+
+    # Remove rows from the sheet that are not in the JSON data
+    rows_to_remove = [row_num for id_value, row_num in existing_ids.items() if id_value not in json_ids]
+    if rows_to_remove:
+        print("Removed resources:")
+        for row_num in sorted(rows_to_remove, reverse=True):  # Remove rows starting from the bottom to avoid shifting
+            removed_row = worksheet.row_values(row_num)
+            worksheet.delete_rows(row_num)
+            print(f"  - Resource with ID: {removed_row[1]}, Name: {removed_row[0]}")
+    else:
+        print("No entries removed.")
+
+    # Process and insert JSON data into the sheet
+    rows = []  # List to hold rows to be added
+    existing_ids_in_sheet = {row[1] for row in all_rows}  # Extract existing IDs from sheet
+    added_resources = []  # List to track added resources
+
+    for entry in json_data:
+        resource_id = entry.get("id", "")
+        if resource_id not in existing_ids_in_sheet:
+            row = [
+                entry.get("name", ""),  # name
+                resource_id,  # id
+                "",  # doc_link (empty for now) ### TODO add create_doc_in_subfolder call###
+                "",  # project_point_values (empty for now)
+                "",  # points_required (empty for now)
+                "TRUE" if entry.get("core", False) else "FALSE"  # core (convert boolean to string)
+            ]
+            rows.append(row)  # Add row to list of rows to be appended
+            added_resources.append(entry)  # Keep track of added resources
+
+    # Batch update rows into the sheet if there are new rows to add
+    if rows:
+        worksheet.append_rows(rows)
+        print("Added resources:")
+        for resource in added_resources:
+            print(f"  - Resource with ID: {resource['id']}, Name: {resource.get('name', 'N/A')}")
+    else:
+        print("No entries added.")
+
+
+def create_doc_in_subfolder(sheet_id, subfolder_name, doc_content):
+    """
+    Create a Google Doc in a subfolder of the folder containing the given Google Sheet,
+    set the content of the document, and make it sharable to anyone with the link.
+    
+    :param sheet_id: The ID of the Google Sheet
+    :param subfolder_name: The name of the subfolder to create inside the sheet's folder
+    :param doc_content: The content to set in the Google Doc
+    :return: A sharable link to the created Google Doc
+    """
+
+    try:
+        # Get the Google Sheet's file metadata to find its parent folder
+        sheet_metadata = drive_service.files().get(fileId=sheet_id, fields='parents').execute()
+        parent_folder_id = sheet_metadata['parents'][0]
+
+        # Create the subfolder inside the parent folder ### TODO modify to work if folder already exists ###
+        folder_metadata = {
+            'name': subfolder_name,
+            'mimeType': 'application/vnd.google-apps.folder',
+            'parents': [parent_folder_id]
+        }
+        subfolder = drive_service.files().create(body=folder_metadata, fields='id').execute()
+        subfolder_id = subfolder['id']
+        print(f"Created subfolder with ID: {subfolder_id}")
+
+        # Create the Google Doc inside the new subfolder
+        document = docs_service.documents().create().execute()
+        document_id = document['documentId']
+        print(f"Created Google Doc with ID: {document_id}")
+
+        # Move the Google Doc into the subfolder
+        file_metadata = {
+            'addParents': subfolder_id
+        }
+        drive_service.files().update(fileId=document_id, addParents=subfolder_id).execute()
+
+        # Set the content of the Google Doc (simple text for this example)
+        requests = [
+            {
+                'insertText': {
+                    'location': {
+                        'index': 1
+                    },
+                    'text': doc_content
+                }
+            }
+        ]
+        docs_service.documents().batchUpdate(documentId=document_id, body={'requests': requests}).execute()
+
+        # Make the document sharable to anyone with the link
+        permission = {
+            'type': 'anyone',
+            'role': 'reader',
+        }
+        drive_service.permissions().create(fileId=document_id, body=permission).execute()
+
+        # Generate the sharable link
+        sharable_link = f"https://docs.google.com/document/d/{document_id}/edit"
+        return sharable_link
+
+    except HttpError as error:
+        print(f"An error occurred: {error}")
+        return None
+
+
+def create_progression_sheet(google_creds, sheet_id):
+    print("program yet to be built")
+
+
+if userAction == "buildResources":
+    create_resources_sheet(google_creds, sheet_id, pull_techs_from_google_sheet(google_creds, sheet_id))
+if userAction == "buildTechnologies":
+    create_flowchart_dependency(pull_techs_from_google_sheet(google_creds, sheet_id),"techs")
+if userAction == "buildProgression":
+    create_progression_sheet(google_creds, sheet_id)

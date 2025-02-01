@@ -4,22 +4,32 @@ this project aims to
 -show tracking through individualized techTree visualizations
 
 ### use case
-## build out techs
+## 1-create google sheet
+-teacher creates new google sheet labeled "techs"
 -teacher creates list of technologies to learn 
   -name
   -type
   -sub_type
--program runs to create tech_ids
 
-## link techs
+## 2-build technologies
+-program generates tech_ids for each tech
+-program generates unlinked flow chart
+
+## 3-add dependencies
 -teacher links tech_ids using the dependency column
--program runs to create flow chart
-   (repeat until flowchart is correct)
+
+## 4-build technologies
+-program generates linked flow chart based on dependencies
+
+## (REPEAT 3 & 4 until all techs are linked)
 
 ## build resources
--program runs to create resources sheet
+-program generates resources sheet
   -preloaded with links to docs created
   -docs follow doc_link_template structure
+
+## build progression
+-program generates 
 
 
 ### google sheets (human readable data sets):
