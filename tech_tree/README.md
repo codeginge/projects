@@ -3,7 +3,7 @@ this project aims to
 -simplify resouce creation and linking to each technology
 -show tracking through individualized techTree visualizations
 
-### use case
+# use case
 ## 1-create google sheet
 -teacher creates new google sheet labeled "techs"
 -teacher creates list of technologies to learn 
@@ -31,47 +31,25 @@ this project aims to
 ## build progression
 -program generates 
 
+# user actions
+## buildResources
+## buildTechnologies
+## buildProgression
 
-### google sheets (human readable data sets):
-## teacher created
+# DATA
+## google sheets (human readable data sets):
+### teacher created
 techs 
 |--name--|--type--|--sub_type--|--core--|--id--|--dependency--|--notes--|
 
-## code created
+### code created
 resources 
 |--name--|--id--|--doc_link--|--project_point_values--|--points_required--|--core--|
 
 progress 
 |--student--|--points--|--id_01_p_01--|--id_02--|--id_03--|--...--|
 
-
-### teacher actions
-
-## createEnvironment 
--pull techTree google sheet
--build techTree_topic_techs.json
--create techTree_topic.png visualization
--create resource sheet
--create progress sheet
-
-## createClass
--pull resource sheet
--create techTree_topic_resource.json
--pull progress sheet
--create techTree_topic_progress.json
--create techTree_topic_student.png for each student
--create techTree_topic_class.png for the whole class
-
-## update
--pull techTree google sheet
--update techTree_topic.json 
--update techTree_topic.png visualization
--update resource sheet
--update techTree_topic_resource.json
--update progress sheet
--update techTree_topic_progress.json
-
-
+## templates
 ### doc template
 -title: type_sub_type
 -subtitle: name_id
@@ -80,9 +58,8 @@ progress
 -projects to show master
 -rubric for each project
 
-
-### json files (program readable data sets)
-techTree_techs.json
+## JSON files
+### techTree_techs.json
 [
 	{
 		"name":"Light - LED", 
@@ -104,7 +81,7 @@ techTree_techs.json
 	}
 ]
 
-techTree_resources.json
+### techTree_resources.json
 [
     {
         "name": "tech_01", 
@@ -124,8 +101,7 @@ techTree_resources.json
     }
 ]
 
-
-techTree_progress.json
+### techTree_progress.json
 {
     "students": [
         {
