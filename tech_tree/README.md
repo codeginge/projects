@@ -43,9 +43,6 @@ techs
 |--name--|--type--|--sub_type--|--core--|--id--|--dependency--|--notes--|
 
 ### code created
-resources 
-|--name--|--id--|--doc_link--|--project_point_values--|--points_required--|--core--|
-
 progress 
 |--student--|--points--|--id_01_p_01--|--id_02--|--id_03--|--...--|
 
@@ -68,7 +65,9 @@ progress
         "core":true, 
 		"id":"ACT001", 
 		"dependency":["c1_01","c1_02","c1_03"],
-		"notes":"Basic light-emitting diode for signaling or lighting in various colors."
+		"doc_link": "link_here_01",
+        "project_point_values": [3, 3, 3], 
+        "points_required": 6
 	},
 	{
 		"name":"Light - LED", 
@@ -77,28 +76,10 @@ progress
         "core":true, 
 		"id":"ACT002", 
 		"dependency":["c1_01","c1_02","c1_03"],
-		"notes":"Basic light-emitting diode for signaling or lighting in various colors."
+		"doc_link": "link_here_01",
+        "project_point_values": [3, 3, 3], 
+        "points_required": 5
 	}
-]
-
-### techTree_resources.json
-[
-    {
-        "name": "tech_01", 
-        "id": "ACT001", 
-        "doc_link": "link_here_01",
-        "project_point_values": [7, 8, 9], 
-        "points_required": 5,
-        "core": true
-    },
-    {
-        "name": "tech_02", 
-        "id": "ACT001", 
-        "doc_link": "link_here_02",
-        "project_point_values": [9, 2, 3], 
-        "points_required": 7,
-        "core": false
-    }
 ]
 
 ### techTree_progress.json
@@ -109,14 +90,11 @@ progress
             "technologies": [
                 {
                     "id": "ACT001",
-                    "type": "circuits",
-                    "sub_type": "amps",
                     "projects": [
-                        {"project_id": "id_01_p_01", "points_aquired": 1},
-                        {"project_id": "id_01_p_02", "points_aquired": 2}
-                    ],
-                    "points_required": 2,
-                    "points_avaliable": 4
+                        {"project_id": "ACT001_P01", "points_aquired": 1},
+                        {"project_id": "ACT001_P02", "points_aquired": 2}
+                    ]
+
                 },
                 {
                     "id": "ACT002",

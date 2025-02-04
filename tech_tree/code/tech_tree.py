@@ -5,8 +5,8 @@ and organizes them based on their dependent techs. this code will:
 Example CMD:
 python3 -m venv myenv
 source myenv/bin/activate 
-pip install graphviz gspread gspread-formatting google-auth google-api-python-client google-auth-httplib2 google-auth-oauthlib
-pip show graphviz
+pip install graphviz gspread gspread-formatting google-auth google-api-python-client google-auth-httplib2 google-auth-oauthlib dash plotly networkx numpy
+
 python3 ./tech_tree.py <path_to_google_api_credentials>.json <google_sheet> userAction
 
 SHARING: the google sheet and the folder in which it lives must be shared with the API email and given 'edit access'
@@ -20,6 +20,12 @@ import argparse
 from graphviz import Digraph
 from gspread_formatting import *
 
+# Dash imports
+import dash
+from dash import dcc, html
+import networkx as nx
+import plotly.graph_objs as go
+from dash.dependencies import Input, Output, State
 
 # Set up argument parsing to accept both CSV file path and JSON output file name
 parser = argparse.ArgumentParser(description="Convert Arduino Tech Tree CSV to JSON format.")
@@ -101,10 +107,13 @@ def pull_techs_from_google_sheet(json_key_path, sheet_id):
             "name": entry.get("name", ""),
             "type": entry.get("type", ""),
             "sub_type": entry.get("sub_type", ""),
+            "core": entry["core"],  # Add the 'core' data point
             "id": entry["id"],
             "dependency": entry.get("dependency", []),
-            "notes": entry.get("notes", ""),
-            "core": entry["core"]  # Add the 'core' data point
+            "doc_link": entry.get("doc_link", ""),
+            "project_points": entry.get("project_points", ""),
+            "required_points": entry.get("required_points", "")
+            
         }
 
         # Add formatted entry to the JSON data list
@@ -157,112 +166,64 @@ def create_flowchart_dependency(data, output_file):
     print(f"Flowchart saved to {output_file}.png")
 
 
-def create_resources_sheet(json_key_path, sheet_id, json_data):
+def create_resources(json_key_path, sheet_id):
     """
-    Creates or clears a 'resources' sheet in the given Google Sheet 
-    and populates it with JSON data, including a formatted title row.
-    Ensures no duplication of rows based on 'id', removes rows with 
-    IDs not present in the current JSON data, and prints added/removed resources.
+    Updates existing rows in the 'techs' sheet by adding document links to IDs that do not have one.
+    Does NOT add new IDs, only updates missing document links.
 
     :param json_key_path: Path to Google service account JSON key file.
     :param sheet_id: The ID of the Google Sheet (from the URL).
-    :param json_data: List of dictionaries containing resource data.
     """
-    doc_template = """
-## Overview
-Brief description of this learning objective and how it connects to the overall learning objective of the class.
-
-## Resources
-Internal or external resources to guide the student on their learning path. Should be enough information for students to complete all projects with.
-
-## Project Template
-Include driving question, project objectives, specific deliverables and milestones towards completion.
-
-| Criteria     | Description                                                                                     | Points (1-3) |
-|--------------|-------------------------------------------------------------------------------------------------|--------------|
-| Understanding| Can you describe what is happening using technical vocabulary? Can you explain this vocabulary to a 5th grader? |              |
-| Application  | Have you applied this knowledge in your project? Does it work? Does it work every time?         |              |
-| Organization | Have you kept your project organized? Was this thrown together or does each part have a place and a purpose? |              |
-"""
-
-    # Authenticate with Google Sheets, Docs and Drive API
-    scopes = ["https://www.googleapis.com/auth/spreadsheets",
-        "https://www.googleapis.com/auth/drive",
-        "https://www.googleapis.com/auth/documents"]
+    
+    scopes = ["https://www.googleapis.com/auth/spreadsheets", "https://www.googleapis.com/auth/drive", "https://www.googleapis.com/auth/documents"]
     creds = Credentials.from_service_account_file(json_key_path, scopes=scopes)
     client = gspread.authorize(creds)
     drive_service = build('drive', 'v3', credentials=creds)
     docs_service = build('docs', 'v1', credentials=creds)
-
-    # Open the Google Sheet by ID
-    spreadsheet = client.open_by_key(sheet_id)
-
-    # Create or select the 'resources' sheet
-    try:
-        worksheet = spreadsheet.worksheet("resources")
-    except gspread.exceptions.WorksheetNotFound:
-        worksheet = spreadsheet.add_worksheet(title="resources", rows="100", cols="10")
     
-    # Define headers
-    headers = ["name", "id", "doc_link", "project_point_values", "points_required", "core"]
+    doc_template = """
+    ## Overview
+    Brief description of this learning objective and how it connects to the overall learning objective of the class.
 
-    # Check if the header already exists, and if not, insert it
-    headers_exist = headers==worksheet.row_values(2)  # Check if headers are in row 2 (where they should be)
-    if not headers_exist:
-        # Insert title row
-        worksheet.insert_row(["RESOURCES"], index=1)  # First row for merged title
-        worksheet.insert_row(headers, index=2)  # Second row for headers
-        # Freeze the first two rows
-        worksheet.freeze(rows=2)
+    ## Resources
+    Internal or external resources to guide the student on their learning path. Should be enough information for students to complete all projects with.
 
-    # Get all rows in the sheet, excluding the header
-    all_rows = worksheet.get_all_values()[2:]  # Exclude title and header
-    existing_ids = {row[1]: row_num + 3 for row_num, row in enumerate(all_rows)}  # Map id to row number (index 3 onward)
+    ## Project Template
+    Include driving question, project objectives, specific deliverables and milestones towards completion.
 
-    # Get list of IDs from the JSON data
-    json_ids = {entry.get("id", "") for entry in json_data}
+    | Criteria     | Description                                                                                     | Points (1-3) |
+    |--------------|-------------------------------------------------------------------------------------------------|--------------|
+    | Understanding| Can you describe what is happening using technical vocabulary? Can you explain this vocabulary to a 5th grader? |              |
+    | Application  | Have you applied this knowledge in your project? Does it work? Does it work every time?         |              |
+    | Organization | Have you kept your project organized? Was this thrown together or does each part have a place and a purpose? |              |
+    """
 
-    # Remove rows from the sheet that are not in the JSON data
-    rows_to_remove = [row_num for id_value, row_num in existing_ids.items() if id_value not in json_ids]
-    if rows_to_remove:
-        print("Removed resources:")
-        for row_num in sorted(rows_to_remove, reverse=True):  # Remove rows starting from the bottom to avoid shifting
-            removed_row = worksheet.row_values(row_num)
-            worksheet.delete_rows(row_num)
-            print(f"  - Resource with ID: {removed_row[1]}, Name: {removed_row[0]}")
+
+    worksheet = client.open_by_key(sheet_id).worksheet("techs")
+    raw_data = worksheet.get_all_values()
+    headers = raw_data[1]  # Assuming the second row contains headers
+    
+    id_col_index = headers.index("id")
+    doc_link_col_index = headers.index("doc_link")
+    
+    updates = []
+    
+    for i, row in enumerate(raw_data[2:], start=3):  # Data starts from row 3
+        resource_id = row[id_col_index].strip()
+        doc_link = row[doc_link_col_index].strip()
+        
+        if resource_id and not doc_link:  # Only process rows with IDs but missing doc_link
+            doc_title = f"{resource_id} - {row[headers.index('name')]}"
+            doc_sub_title = f"{row[headers.index('type')]} - {row[headers.index('sub_type')]}"
+            doc_link = create_doc_in_subfolder(drive_service, docs_service, sheet_id, "Resources", doc_title, doc_sub_title, doc_template)
+            cell_range = f"{chr(65 + doc_link_col_index)}{i}"  # Convert column index to letter
+            updates.append({"range": cell_range, "values": [[doc_link]]})
+    
+    if updates:
+        worksheet.batch_update(updates)
+        print(f"Updated {len(updates)} missing document links.")
     else:
-        print("No entries removed.")
-
-    # Process and insert JSON data into the sheet
-    rows = []  # List to hold rows to be added
-    existing_ids_in_sheet = {row[1] for row in all_rows}  # Extract existing IDs from sheet
-    added_resources = []  # List to track added resources
-
-    for entry in json_data:
-        resource_id = entry.get("id", "")
-        if resource_id not in existing_ids_in_sheet:
-            resource_title = f"{resource_id}-{entry.get('name','')}"
-            resource_subtitle = f"{entry.get('type','')}-{entry.get('sub_type','')}"
-            doc_link = create_doc_in_subfolder(drive_service, docs_service, sheet_id, "Resources", resource_title, resource_subtitle, doc_template)
-            row = [
-                entry.get("name", ""),  # name
-                resource_id,  # id
-                doc_link,  # doc_link (empty for now) ### TODO add create_doc_in_subfolder call###
-                "",  # project_point_values (empty for now)
-                "",  # points_required (empty for now)
-                "TRUE" if entry.get("core", False) else "FALSE"  # core (convert boolean to string)
-            ]
-            rows.append(row)  # Add row to list of rows to be appended
-            added_resources.append(entry)  # Keep track of added resources
-
-    # Batch update rows into the sheet if there are new rows to add
-    if rows:
-        worksheet.append_rows(rows)
-        print("Added resources:")
-        for resource in added_resources:
-            print(f"  - Resource with ID: {resource['id']}, Name: {resource.get('name', 'N/A')}")
-    else:
-        print("No entries added.")
+        print("No missing document links to update.")
 
 
 def create_doc_in_subfolder(drive_service, docs_service, sheet_id, subfolder_name, title, subtitle, content):
@@ -308,36 +269,40 @@ def create_doc_in_subfolder(drive_service, docs_service, sheet_id, subfolder_nam
             doc_id = document['documentId']
             drive_service.files().update(fileId=doc_id, addParents=subfolder_id).execute()
 
-        # Step 4: Insert the title, subtitle, and content as markdown text
-        requests = []
-        cursor_index = 1  # Start from index 1 for title
+            # Step 4: Insert the title, subtitle, and content as markdown text
+            requests = []
+            cursor_index = 1  # Start from index 1 for title
 
-        # Add Title
-        requests.append({
-            "insertText": {"location": {"index": cursor_index}, "text": title + "\n"}
-        })
-        cursor_index += len(title) + 1  # Increment cursor index after insertion
+            # Add Title
+            requests.append({
+                "insertText": {"location": {"index": cursor_index}, "text": title + "\n"}
+            })
+            cursor_index += len(title) + 1  # Increment cursor index after insertion
 
-        # Add Subtitle
-        requests.append({
-            "insertText": {"location": {"index": cursor_index}, "text": subtitle + "\n\n"}
-        })
-        cursor_index += len(subtitle) + 2  # Increment cursor index after insertion
+            # Add Subtitle
+            requests.append({
+                "insertText": {"location": {"index": cursor_index}, "text": subtitle + "\n\n"}
+            })
+            cursor_index += len(subtitle) + 2  # Increment cursor index after insertion
 
-        # Add Content 
-        requests.append({
-            "insertText": {"location": {"index": cursor_index}, "text": content}
-        })
+            # Add Content 
+            requests.append({
+                "insertText": {"location": {"index": cursor_index}, "text": content}
+            })
 
-        # Execute Batch Update
-        docs_service.documents().batchUpdate(documentId=doc_id, body={"requests": requests}).execute()
+            # Execute Batch Update
+            docs_service.documents().batchUpdate(documentId=doc_id, body={"requests": requests}).execute()
 
-        # Step 5: Make the document sharable to anyone with the link
-        drive_service.permissions().create(fileId=doc_id, body={'type': 'anyone', 'role': 'reader'}, fields="id").execute()
+            # Step 5: Make the document sharable to anyone with the link
+            drive_service.permissions().create(fileId=doc_id, body={'type': 'anyone', 'role': 'reader'}, fields="id").execute()
 
-        # Step 6: Return sharable link
-        doc_link = f"https://docs.google.com/document/d/{doc_id}/edit"
-        return doc_link
+            # Step 6: Return sharable link
+            doc_link = f"https://docs.google.com/document/d/{doc_id}/edit"
+            return doc_link
+        else:
+            doc_link = f"https://docs.google.com/document/d/{doc_id}/edit"
+            print(f"linked previous resource for {title}")
+            return doc_link
 
     except HttpError as error:
         print(f"An error occurred: {error}")
@@ -348,8 +313,221 @@ def create_progression_sheet(google_creds, sheet_id):
     print("program yet to be built")
 
 
+def create_dash_app(google_creds, sheet_id):
+    app = dash.Dash(__name__)
+
+    app.layout = html.Div([
+        html.H1("Tech Dependency Flowchart", style={"textAlign": "center"}),
+
+        # Buttons
+        html.Button("Update Techs", id="refresh-button", n_clicks=0, style={"margin": "10px"}),
+        html.Button("Build Resources", id="build-resources-button", n_clicks=0, style={"margin": "10px"}),
+
+        # Status Output for Build Resources
+        html.Div(id="status-output", style={"margin": "10px", "color": "green"}),
+
+        # Hidden Storage for Data
+        dcc.Store(id="stored-data"),
+
+        # Graph Component
+        dcc.Graph(id="network-graph"),
+
+        # Floating Detail Box
+        html.Div(
+            id="node-details",
+            style={"display": "none", "position": "absolute",
+                   "backgroundColor": "white", "border": "1px solid black",
+                   "padding": "10px", "zIndex": 1000, "maxWidth": "250px",
+                   "boxShadow": "2px 2px 10px rgba(0,0,0,0.2)"},
+            children=[
+                html.Div(id="node-content"),
+                html.Button("X", id="close-button", n_clicks=0, style={"position": "absolute", "top": "5px", "right": "5px"})
+            ]
+        ),
+
+        # Store to track whether details are open
+        dcc.Store(id="details-visible", data=False),
+        dcc.Store(id="last-clicked-node", data=None),
+        dcc.Store(id="click-reset", data=0)
+    ])
+
+    # Callback to build resources
+    @app.callback(
+        Output("status-output", "children"),
+        Input("build-resources-button", "n_clicks"),
+        prevent_initial_call=True
+    )
+    def handle_build_resources(n_clicks):
+        if n_clicks > 0:
+            create_resources(google_creds, sheet_id)
+            return "Resources have been successfully built!"
+        return dash.no_update
+
+    # Function to Fetch Data
+    def fetch_updated_data():
+        """Fetch updated data from Google Sheets"""
+        return pull_techs_from_google_sheet(google_creds, sheet_id)
+
+    # Callback to Fetch and Store Data When Refresh Button is Clicked
+    @app.callback(
+        Output("stored-data", "data"),
+        Input("refresh-button", "n_clicks"),
+        prevent_initial_call=True
+    )
+    def update_stored_data(n_clicks):
+        return fetch_updated_data()
+
+    # Callback to Update Graph When Data is Updated
+    @app.callback(
+        Output("network-graph", "figure"),
+        Input("stored-data", "data")
+    )
+    def update_graph(stored_data):
+        if not stored_data:
+            raise dash.exceptions.PreventUpdate
+
+        # Create Directed Graph
+        G = nx.DiGraph()
+        node_lookup = {node["id"]: node for node in stored_data}
+        edges = []
+
+        for node in stored_data:
+            G.add_node(node["id"], label=f"{node['name']} ({node['id']})")
+            for dep in node["dependency"]:
+                if dep in node_lookup:
+                    G.add_edge(dep, node["id"])
+                    edges.append((dep, node["id"]))
+
+        # Compute depth levels for nodes (to determine vertical position)
+        def compute_depth(node, depth_map):
+            if node in depth_map:
+                return depth_map[node]
+            predecessors = list(G.predecessors(node))
+            if not predecessors:  # Root node
+                depth_map[node] = 0
+            else:
+                depth_map[node] = max(compute_depth(parent, depth_map) for parent in predecessors) + 1
+            return depth_map[node]
+
+        depth_map = {}
+        for node in G.nodes:
+            compute_depth(node, depth_map)
+
+        # Assign positions
+        pos = {}
+        x_positions = {}  # Track used X positions per depth level
+        for node, depth in depth_map.items():
+            if depth not in x_positions:
+                x_positions[depth] = 0
+            pos[node] = (x_positions[depth], -depth)  # Higher depth = lower Y
+            x_positions[depth] += 1  # Increment X position
+
+        # Create Plotly Edges
+        edge_traces = [
+            go.Scatter(
+                x=[pos[edge[0]][0], pos[edge[1]][0], None],
+                y=[pos[edge[0]][1], pos[edge[1]][1], None],
+                line=dict(width=1, color="gray"),
+                mode="lines"
+            ) for edge in edges
+        ]
+
+        # Create Plotly Nodes
+        node_traces = [
+            go.Scatter(
+                x=[x], y=[y],
+                text=node_lookup[node_id]["name"] + f" ({node_id})",
+                mode="markers+text",
+                textposition="top center",
+                marker=dict(size=20, color="blue"),
+                hoverinfo="text",
+                customdata=[node_id]
+            ) for node_id, (x, y) in pos.items()
+        ]
+
+        return go.Figure(
+            data=edge_traces + node_traces,
+            layout=go.Layout(
+                showlegend=False, hovermode="closest",
+                margin=dict(b=0, l=0, r=0, t=0),
+                xaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
+                yaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
+            )
+        )
+
+
+    @app.callback(
+        [Output("node-content", "children"), 
+         Output("node-details", "style"), 
+         Output("details-visible", "data"), 
+         Output("last-clicked-node", "data"),
+         Output("network-graph", "clickData")],  # Reset clickData
+        [Input("network-graph", "clickData"), 
+         Input("close-button", "n_clicks")],
+        [State("stored-data", "data")]
+    )
+    def display_node_details(clickData, n_clicks_close, stored_data):
+        ctx = dash.callback_context
+        trigger_id = ctx.triggered[0]["prop_id"].split(".")[0] if ctx.triggered else None
+
+        # If close button clicked, reset everything
+        if trigger_id == "close-button":
+            return "", {"display": "none"}, False, None, None  # Reset clickData too!
+
+        # If no node clicked or no data available, do nothing
+        if not clickData or not stored_data:
+            return dash.no_update
+
+        # Get clicked node ID
+        node_id = clickData["points"][0]["customdata"]
+
+        # Find node details
+        node_lookup = {node["id"]: node for node in stored_data}
+        node_info = node_lookup.get(node_id, {})
+
+        # Ensure node details exist
+        if not node_info:
+            return dash.no_update
+
+        # Get click position
+        x_click, y_click = clickData["points"][0]["x"], clickData["points"][0]["y"]
+
+        new_style = {
+            "display": "block",
+            "position": "absolute",
+            "left": f"{x_click * 50 + 300}px",
+            "top": f"{y_click * 50 + 300}px",
+            "backgroundColor": "white",
+            "border": "1px solid black",
+            "padding": "10px",
+            "zIndex": 1000,
+            "maxWidth": "250px",
+            "boxShadow": "2px 2px 10px rgba(0,0,0,0.2)"
+        }
+
+        node_details_content = html.Div([
+            html.H3(f"{node_info['name']} ({node_info['id']})"),
+            html.P(f"Type: {node_info['type']}"),
+            html.P(f"Sub-Type: {node_info['sub_type']}"),
+            html.P(f"Core Component: {'Yes' if node_info['core'] else 'No'}"),
+            html.P(f"Dependencies: {', '.join(node_info['dependency']) if node_info['dependency'] else 'None'}"),
+            html.P(f"Project Point Values: {node_info['project_points']}"),
+            html.P(f"Points Required: {node_info['required_points']}"),
+            html.A("Open Document", href=node_info["doc_link"], target="_blank")
+        ])
+
+        return node_details_content, new_style, True, node_id, clickData  # Keep clickData!
+
+
+    return app
+
+
+if userAction == "runServer":
+    if __name__ == "__main__":
+        app = create_dash_app(google_creds, sheet_id)
+        app.run_server(debug=True)
 if userAction == "buildResources":
-    create_resources_sheet(google_creds, sheet_id, pull_techs_from_google_sheet(google_creds, sheet_id))
+    create_resources(google_creds, sheet_id)
 if userAction == "buildTechnologies":
     create_flowchart_dependency(pull_techs_from_google_sheet(google_creds, sheet_id),"techs")
 if userAction == "buildProgression":
