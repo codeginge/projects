@@ -7,7 +7,7 @@ python3 -m venv myenv
 source myenv/bin/activate 
 pip install graphviz gspread gspread-formatting google-auth google-api-python-client google-auth-httplib2 google-auth-oauthlib dash plotly networkx numpy
 
-python3 ./tech_tree.py <path_to_google_api_credentials>.json <google_sheet> userAction
+python3 ./tech_tree.py <path_to_google_api_credentials>.json <google_sheet_id> userAction
 
 SHARING: the google sheet and the folder in which it lives must be shared with the API email and given 'edit access'
 """
@@ -61,7 +61,7 @@ def pull_techs_from_google_sheet(json_key_path, sheet_id):
 
     # Extract headers from the first row
     headers = raw_data[1]  # Assuming the second row contains headers
-    id_col_index = headers.index("id") + 1  # Find index of the "id" column (1-based for Google Sheets)
+    id_col_index = headers.index("tech_id") + 1  # Find index of the "tech_id" column (1-based for Google Sheets)
     core_col_index = headers.index("core") + 1  # Find index of the "core" column (1-based)
 
     # Get existing IDs to prevent conflicts
@@ -82,8 +82,8 @@ def pull_techs_from_google_sheet(json_key_path, sheet_id):
         core_value = row[core_col_index - 1].strip()  # Get the value from the "core" column
         entry["core"] = True if core_value.lower() == "x" else False
 
-        # Generate ID if missing
-        if not entry.get("id"):
+        # Generate tech ID if missing
+        if not entry.get("tech_id"):
             type_prefix = entry["type"][:3].upper()  # First 3 letters of type
             num = type_counters.get(type_prefix, 0) + 1
             new_id = f"{type_prefix}{num:03d}"
@@ -94,7 +94,7 @@ def pull_techs_from_google_sheet(json_key_path, sheet_id):
                 new_id = f"{type_prefix}{num:03d}"
 
             # Assign final unique ID
-            entry["id"] = new_id
+            entry["tech_id"] = new_id
             existing_ids.add(new_id)  # Add to existing IDs to avoid future conflicts
             type_counters[type_prefix] = num  # Update counter for this type
 
@@ -108,7 +108,7 @@ def pull_techs_from_google_sheet(json_key_path, sheet_id):
             "type": entry.get("type", ""),
             "sub_type": entry.get("sub_type", ""),
             "core": entry["core"],  # Add the 'core' data point
-            "id": entry["id"],
+            "tech_id": entry["tech_id"],
             "dependency": entry.get("dependency", []),
             "doc_link": entry.get("doc_link", ""),
             "project_points": entry.get("project_points", ""),
@@ -154,12 +154,12 @@ def create_flowchart_dependency(data, output_file):
             sub.attr(label=f'<<B><FONT POINT-SIZE="50">{type_name}</FONT></B>>', fontname="Arial", style="dashed")
             for item in items:
                 type_color = type_colors.get(item["type"], "lightgray")  # Default to lightgray
-                sub.node(item["id"], f'{item["name"]}\n({item["id"]})', fillcolor=type_color, width="1", height="0.4")
+                sub.node(item["tech_id"], f'{item["name"]}\n({item["tech_id"]})', fillcolor=type_color, width="1", height="0.4")
 
     # Ensure dependent nodes appear **below** their dependencies
     for item in data:
         for dependency in item["dependency"]:
-            dot.edge(dependency, item["id"], constraint="true", minlen="1")  # Forces vertical placement
+            dot.edge(dependency, item["tech_id"], constraint="true", minlen="1")  # Forces vertical placement
 
     # Save and render the graph
     dot.render(f'../other/{output_file}', cleanup=True)
@@ -203,7 +203,7 @@ def create_resources(json_key_path, sheet_id):
     raw_data = worksheet.get_all_values()
     headers = raw_data[1]  # Assuming the second row contains headers
     
-    id_col_index = headers.index("id")
+    id_col_index = headers.index("tech_id")
     doc_link_col_index = headers.index("doc_link")
     
     updates = []
@@ -250,19 +250,19 @@ def create_doc_in_subfolder(drive_service, docs_service, sheet_id, subfolder_nam
 
         # Step 2: Check if the subfolder already exists
         query = f"'{parent_folder_id}' in parents and mimeType='application/vnd.google-apps.folder' and name='{subfolder_name}'"
-        existing_folders = drive_service.files().list(q=query, fields="files(id)").execute().get('files', [])
+        existing_folders = drive_service.files().list(q=query, fields="files(tech_id)").execute().get('files', [])
         
-        subfolder_id = existing_folders[0]['id'] if existing_folders else None
+        subfolder_id = existing_folders[0]['tech_id'] if existing_folders else None
         if subfolder_id is None:
             folder_metadata = {'name': subfolder_name, 'mimeType': 'application/vnd.google-apps.folder', 'parents': [parent_folder_id]}
-            subfolder = drive_service.files().create(body=folder_metadata, fields='id').execute()
-            subfolder_id = subfolder['id']
+            subfolder = drive_service.files().create(body=folder_metadata, fields='tech_id').execute()
+            subfolder_id = subfolder['tech_id']
 
         # Step 3: Check for existing document
         query = f"'{subfolder_id}' in parents and mimeType='application/vnd.google-apps.document' and name='{title}'"
-        existing_docs = drive_service.files().list(q=query, fields="files(id)").execute().get('files', [])
+        existing_docs = drive_service.files().list(q=query, fields="files(tech_id)").execute().get('files', [])
         
-        doc_id = existing_docs[0]['id'] if existing_docs else None
+        doc_id = existing_docs[0]['tech_id'] if existing_docs else None
         if doc_id is None:
             doc_metadata = {'title': title}
             document = docs_service.documents().create(body=doc_metadata).execute()
@@ -294,7 +294,7 @@ def create_doc_in_subfolder(drive_service, docs_service, sheet_id, subfolder_nam
             docs_service.documents().batchUpdate(documentId=doc_id, body={"requests": requests}).execute()
 
             # Step 5: Make the document sharable to anyone with the link
-            drive_service.permissions().create(fileId=doc_id, body={'type': 'anyone', 'role': 'reader'}, fields="id").execute()
+            drive_service.permissions().create(fileId=doc_id, body={'type': 'anyone', 'role': 'reader'}, fields="tech_id").execute()
 
             # Step 6: Return sharable link
             doc_link = f"https://docs.google.com/document/d/{doc_id}/edit"
@@ -388,15 +388,15 @@ def create_dash_app(google_creds, sheet_id):
 
         # Create Directed Graph
         G = nx.DiGraph()
-        node_lookup = {node["id"]: node for node in stored_data}
+        node_lookup = {node["tech_id"]: node for node in stored_data}
         edges = []
 
         for node in stored_data:
-            G.add_node(node["id"], label=f"{node['name']} ({node['id']})")
+            G.add_node(node["tech_id"], label=f"{node['name']} ({node['tech_id']})")
             for dep in node["dependency"]:
                 if dep in node_lookup:
-                    G.add_edge(dep, node["id"])
-                    edges.append((dep, node["id"]))
+                    G.add_edge(dep, node["tech_id"])
+                    edges.append((dep, node["tech_id"]))
 
         # Compute depth levels for nodes (to determine vertical position)
         def compute_depth(node, depth_map):
@@ -482,7 +482,7 @@ def create_dash_app(google_creds, sheet_id):
         node_id = clickData["points"][0]["customdata"]
 
         # Find node details
-        node_lookup = {node["id"]: node for node in stored_data}
+        node_lookup = {node["tech_id"]: node for node in stored_data}
         node_info = node_lookup.get(node_id, {})
 
         # Ensure node details exist
@@ -506,7 +506,7 @@ def create_dash_app(google_creds, sheet_id):
         }
 
         node_details_content = html.Div([
-            html.H3(f"{node_info['name']} ({node_info['id']})"),
+            html.H3(f"{node_info['name']} ({node_info['tech_id']})"),
             html.P(f"Type: {node_info['type']}"),
             html.P(f"Sub-Type: {node_info['sub_type']}"),
             html.P(f"Core Component: {'Yes' if node_info['core'] else 'No'}"),
