@@ -2,6 +2,7 @@ this project aims to
 -create a techTree from a google sheet to give a flow chart visualization of learning for any subject
 -simplify resouce creation and linking to each technology
 -show tracking through individualized techTree visualizations
+-track material use to help with inventory management
 
 # use case
 ## 1-create google sheet
@@ -23,13 +24,36 @@ this project aims to
 
 ## (REPEAT 3 & 4 until all techs are linked)
 
-## build resources
+## add resource docs and link
+-teacher clicks build resources
 -program generates resources sheet
   -preloaded with links to docs created
   -docs follow doc_link_template structure
 
+## build out resources 
+-teacher adds cirriculum to resource document template
+-teacher adds projects to resource document that prove competence
+-teacher adds point values for each project in project_points column
+
+## build projects
+-teacher clicks build projects
+-code runs and generates techTree_projects.json from project_points info in techTree_techs.json
+-updates projects list in related tech_id in techTree_techs.json
+
+## build out materials
+-teacher adds materials to materials sheet
+
+## connect materials to projects
+-teacher clicks "Update Materials" button
+-code generates materials ids for added materials and updates techTree_materials.json
+-teacher goes to tech flowchart, clicks node, inside details goes to projects, clicks a project 
+	to get project_details, clicks "+" next to materials, adds material from drop down list and sets 
+	materials_count, clicks save and material_id and material__count added to materials list inside 
+	project in techTree_projects.json
+
 ## build progression
--program generates 
+-teacher adds student names and class to "progress" sheet
+-program generates techTree_progress.json
 
 # user actions
 ## buildResources
@@ -40,11 +64,11 @@ this project aims to
 ## google sheets (human readable data sets):
 ### teacher created
 techs 
-|--name--|--type--|--sub_type--|--core--|--id--|--dependency--|--notes--|
+|--"name"--|--"type"--|--"sub_type"--|--"core"--|--"id"--|--"dependency"--|--"notes"--|
 
 ### code created
 progress 
-|--student--|--points--|--id_01_p_01--|--id_02--|--id_03--|--...--|
+|--"name"--|--"class"--|--"core"--|--core+"--|--"non_core"--|--"non_core+"--|
 
 ## templates
 ### doc template
@@ -66,9 +90,7 @@ progress
         "core":true, 
 		"tech_id":"ACT001", 
 		"dependency":["c1_01","c1_02","c1_03"],
-		"doc_link": "link_here_01",
-        "project_point_values": [3, 3, 3], 
-        "points_required": 6
+		"tech_link": "link_here_01",
 	},
 	{
 		"name":"Light - LED", 
@@ -77,9 +99,67 @@ progress
         "core":true, 
 		"tech_id":"ACT002", 
 		"dependency":["c1_01","c1_02","c1_03"],
-		"doc_link": "link_here_01",
-        "project_point_values": [3, 3, 3], 
-        "points_required": 5
+		"tech_link": "link_here_01",
+	}
+]
+```
+
+### techTree_projects.json
+```
+[
+	{
+		"name":"light up LED",
+		"techs_required": ["ACT002","ACT006",...],
+		"project_id:":"P001",
+		"dependency":[],
+		"project_link":"link_here"
+		"materials": [
+			{
+			"material_id":"M001",
+			"material_use": 3
+			},
+			{
+			"material_id":"M002",
+			"material_use": 1
+			},
+			{
+			"material_id":"M003",
+			"material_use": 0
+			}
+		]
+	},
+	{
+		"project_id:":"P002",
+		"dependency":["P001"],
+		...
+	},
+	...
+]
+```
+
+### techTre_materials.json
+```
+[
+	{
+		"name":"exacto knife",
+		"type":"tool",
+		"sub_type":"cutting",
+		"fabricated":False,
+		"amz_link":"",
+		"stl_link":"",
+		"price":9.00,
+		"count":10,
+		"unit_measure":"handle"
+		"material_id":"M001",
+		"sop_link":"",
+		"storage_location":True,
+		"current_inventory":7,
+		"desired_inventory":20
+
+	},
+	{
+		"name":"exacto blade",
+		...
 	}
 ]
 ```
@@ -90,20 +170,97 @@ progress
     "students": [
         {
             "name": "student_01",
-            "projects": [
+            "techs": [
                 {
-                	"project_id:":"P001",
-                	"points_aquired": 5
+                	"tech_id:":"ACT001",
+                	"levels": [
+			        	{
+			        		"level":1,
+			        		"knowledge":False,
+			        		"application":False,
+			        	},
+			        	{
+			        		"level":2,
+			        		"knowledge":False,
+			        		"application":False,
+			        	},
+			        	{
+			        		"level":3,
+			        		"knowledge":False,
+			        		"application":False,
+			        	},
+			        	{
+			        		"level":4,
+			        		"knowledge":False,
+			        		"application":False,
+			        	}
+        			]
                 },
                 {
-                	"project_id:":"P002",
-                	"points_aquired": 4
+                	"tech_id:":"ACT002",
+                	"levels": [
+			        	{
+			        		"level":1,
+			        		"knowledge":False,
+			        		"application":False,
+			        	},
+			        	{
+			        		"level":2,
+			        		"knowledge":False,
+			        		"application":False,
+			        	},
+			        	{
+			        		"level":3,
+			        		"knowledge":False,
+			        		"application":False,
+			        	},
+			        	{
+			        		"level":4,
+			        		"knowledge":False,
+			        		"application":False,
+			        	}
+        			]
                 },
-                                {
-                	"project_id:":"P003",
-                	"points_aquired": 7
-                }
-            ]
+                ...
+        	],
+        	"projects": [
+	        	{
+	        		"project_id":"P001",
+    				"levels":[
+			        	{
+			        		"level":1,
+			        		"knowledge":False,
+			        		"application":False,
+			        		"engagement":False,
+			        		"reflection":False
+			        	},
+			        	{
+			        		"level":2,
+			        		"knowledge":False,
+			        		"application":False,
+			        		"engagement":False,
+			        		"reflection":False
+			        	},
+			        	{
+			        		"level":3,
+			        		"knowledge":False,
+			        		"application":False,
+			        		"engagement":False,
+			        		"reflection":False
+			        	},
+			        	{
+			        		"level":4,
+			        		"knowledge":False,
+			        		"application":False,
+			        		"engagement":False,
+			        		"reflection":False,
+			        	}
+        			]
+	        	},
+	        	{
+	        		"project_id":"P002",
+	        	}
+	        ]
         },
         {
             "name": "student_02",
@@ -113,63 +270,13 @@ progress
 }
 ```
 
-### techTree_projects.json
-```
-[
-	{
-		"project_id:":"P001",
-		"tech_id":"ACT001",
-		"points_avaliable":3,
-		"materials": [
-			{
-			"material_id":"M001",
-			"material_count": 3
-			},
-			{
-			"material_id":"M002",
-			"material_count": 1
-			},
-			{
-			"material_id":"M003",
-			"material_count": 10
-			}
-		]
-	},
-	{
-		...
-	}
-]
-```
-
-### techTre_materials.json
-```
-[
-	{
-		"material_id":"M001",
-		"name":"",
-		"link":"",
-		"type":"",
-		"sub_type":"",
-		"fabricated":False,
-		"order_price":5.00,
-		"order_count":7,
-		"current_inventory":12,
-		"desired_inventory":20,
-		"unit_measure":""
-	},
-	{
-		"material_id":"M002",
-		...
-	}
-]
-```
-
+# FOR LATER DEVELOPEMENT
 ### techTree_kits.json
 ```
 [
 	{
 		"kit_id":"K001",
-		"kit_name":"thermister sensor",
+		"name":"thermister sensor",
 		"current_inventory":2,
 		"desired_inventory":5,
 		"materials": [
@@ -194,6 +301,35 @@ progress
 ]
 ```
 
+### techTree_contracts.json
+```
+[
+	{
+		"contract_id":"C001",
+		"name":"thermister sensor",
+		"current_inventory":2,
+		"desired_inventory":5,
+		"materials": [
+			{
+			"material_id":"M001",
+			"count": 3
+			},
+			{
+			"material_id":"M002",
+			"count": 1
+			},
+			{
+			"material_id":"M003",
+			"count": 10
+			}
+		]
+	},
+	{
+		"kit_id":"K002",
+		...
+	}
+]
+```
 
 
 

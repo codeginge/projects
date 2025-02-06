@@ -11,21 +11,23 @@ python3 ./tech_tree.py <path_to_google_api_credentials>.json <google_sheet_id> u
 
 SHARING: the google sheet and the folder in which it lives must be shared with the API email and given 'edit access'
 """
+
+import json
+import argparse
 import gspread
+from gspread_formatting import *
 from google.oauth2.service_account import Credentials
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
-import json
-import argparse
 from graphviz import Digraph
-from gspread_formatting import *
 
 # Dash imports
 import dash
 from dash import dcc, html
+from dash.dependencies import Input, Output, State
 import networkx as nx
 import plotly.graph_objs as go
-from dash.dependencies import Input, Output, State
+
 
 # Set up argument parsing to accept both CSV file path and JSON output file name
 parser = argparse.ArgumentParser(description="Convert Arduino Tech Tree CSV to JSON format.")
@@ -110,7 +112,7 @@ def pull_techs_from_google_sheet(json_key_path, sheet_id):
             "core": entry["core"],  # Add the 'core' data point
             "tech_id": entry["tech_id"],
             "dependency": entry.get("dependency", []),
-            "doc_link": entry.get("doc_link", ""),
+            "tech_link": entry.get("tech_link", ""),
             "project_points": entry.get("project_points", ""),
             "required_points": entry.get("required_points", "")
             
@@ -183,41 +185,54 @@ def create_resources(json_key_path, sheet_id):
     
     doc_template = """
     ## Overview
-    Brief description of this learning objective and how it connects to the overall learning objective of the class.
+    Brief description of this learning objective and how it connects to the 
+    overall learning objective of the class.
 
     ## Resources
-    Internal or external resources to guide the student on their learning path. Should be enough information for students to complete all projects with.
+    Internal or external resources to guide the student on their learning 
+    path. Should be enough information for students to complete all 
+    projects with.
 
     ## Project Template
-    Include driving question, project objectives, specific deliverables and milestones towards completion.
+    Include driving question, project objectives, specific deliverables and 
+    milestones towards completion.
 
-    | Criteria     | Description                                                                                     | Points (1-3) |
-    |--------------|-------------------------------------------------------------------------------------------------|--------------|
-    | Understanding| Can you describe what is happening using technical vocabulary? Can you explain this vocabulary to a 5th grader? |              |
-    | Application  | Have you applied this knowledge in your project? Does it work? Does it work every time?         |              |
-    | Organization | Have you kept your project organized? Was this thrown together or does each part have a place and a purpose? |              |
+    |--------------|------------------------------------------|--------------|
+    | Criteria     | Description                              | Points (1-3) |
+    |--------------|------------------------------------------|--------------|
+    | Understanding| Can you describe what is happening using |              |
+    |              | technical vocabulary? Can you explain    |              |
+    |              | this vocabulary to a 5th grader?         |              |
+    |--------------|------------------------------------------|--------------|
+    | Application  | Have you applied this knowledge in your  |              | 
+    |              | project? Does it work? Does it work      |              |  
+    |              | every time?                              |              |
+    |--------------|------------------------------------------|--------------|
+    | Organization | Have you kept your project organized?    |              |
+    |              | Was this thrown together or does each    |              |
+    |              | part have a place and a purpose?         |              |
+    |--------------|------------------------------------------|--------------|
     """
-
 
     worksheet = client.open_by_key(sheet_id).worksheet("techs")
     raw_data = worksheet.get_all_values()
     headers = raw_data[1]  # Assuming the second row contains headers
     
     id_col_index = headers.index("tech_id")
-    doc_link_col_index = headers.index("doc_link")
+    tech_link_col_index = headers.index("tech_link")
     
     updates = []
     
     for i, row in enumerate(raw_data[2:], start=3):  # Data starts from row 3
         resource_id = row[id_col_index].strip()
-        doc_link = row[doc_link_col_index].strip()
+        tech_link = row[tech_link_col_index].strip()
         
-        if resource_id and not doc_link:  # Only process rows with IDs but missing doc_link
+        if resource_id and not tech_link:  # Only process rows with IDs but missing tech_link
             doc_title = f"{resource_id} - {row[headers.index('name')]}"
             doc_sub_title = f"{row[headers.index('type')]} - {row[headers.index('sub_type')]}"
-            doc_link = create_doc_in_subfolder(drive_service, docs_service, sheet_id, "Resources", doc_title, doc_sub_title, doc_template)
-            cell_range = f"{chr(65 + doc_link_col_index)}{i}"  # Convert column index to letter
-            updates.append({"range": cell_range, "values": [[doc_link]]})
+            tech_link = create_doc_in_subfolder(drive_service, docs_service, sheet_id, "Resources", doc_title, doc_sub_title, doc_template)
+            cell_range = f"{chr(65 + tech_link_col_index)}{i}"  # Convert column index to letter
+            updates.append({"range": cell_range, "values": [[tech_link]]})
     
     if updates:
         worksheet.batch_update(updates)
@@ -250,19 +265,19 @@ def create_doc_in_subfolder(drive_service, docs_service, sheet_id, subfolder_nam
 
         # Step 2: Check if the subfolder already exists
         query = f"'{parent_folder_id}' in parents and mimeType='application/vnd.google-apps.folder' and name='{subfolder_name}'"
-        existing_folders = drive_service.files().list(q=query, fields="files(tech_id)").execute().get('files', [])
+        existing_folders = drive_service.files().list(q=query, fields="files(id)").execute().get('files', [])
         
-        subfolder_id = existing_folders[0]['tech_id'] if existing_folders else None
+        subfolder_id = existing_folders[0]['id'] if existing_folders else None
         if subfolder_id is None:
             folder_metadata = {'name': subfolder_name, 'mimeType': 'application/vnd.google-apps.folder', 'parents': [parent_folder_id]}
-            subfolder = drive_service.files().create(body=folder_metadata, fields='tech_id').execute()
-            subfolder_id = subfolder['tech_id']
+            subfolder = drive_service.files().create(body=folder_metadata, fields='id').execute()
+            subfolder_id = subfolder['id']
 
         # Step 3: Check for existing document
         query = f"'{subfolder_id}' in parents and mimeType='application/vnd.google-apps.document' and name='{title}'"
-        existing_docs = drive_service.files().list(q=query, fields="files(tech_id)").execute().get('files', [])
+        existing_docs = drive_service.files().list(q=query, fields="files(id)").execute().get('files', [])
         
-        doc_id = existing_docs[0]['tech_id'] if existing_docs else None
+        doc_id = existing_docs[0]['id'] if existing_docs else None
         if doc_id is None:
             doc_metadata = {'title': title}
             document = docs_service.documents().create(body=doc_metadata).execute()
@@ -294,15 +309,15 @@ def create_doc_in_subfolder(drive_service, docs_service, sheet_id, subfolder_nam
             docs_service.documents().batchUpdate(documentId=doc_id, body={"requests": requests}).execute()
 
             # Step 5: Make the document sharable to anyone with the link
-            drive_service.permissions().create(fileId=doc_id, body={'type': 'anyone', 'role': 'reader'}, fields="tech_id").execute()
+            drive_service.permissions().create(fileId=doc_id, body={'type': 'anyone', 'role': 'reader'}, fields="id").execute()
 
             # Step 6: Return sharable link
-            doc_link = f"https://docs.google.com/document/d/{doc_id}/edit"
-            return doc_link
+            tech_link = f"https://docs.google.com/document/d/{doc_id}/edit"
+            return tech_link
         else:
-            doc_link = f"https://docs.google.com/document/d/{doc_id}/edit"
+            tech_link = f"https://docs.google.com/document/d/{doc_id}/edit"
             print(f"linked previous resource for {title}")
-            return doc_link
+            return tech_link
 
     except HttpError as error:
         print(f"An error occurred: {error}")
@@ -513,7 +528,7 @@ def create_dash_app(google_creds, sheet_id):
             html.P(f"Dependencies: {', '.join(node_info['dependency']) if node_info['dependency'] else 'None'}"),
             html.P(f"Project Point Values: {node_info['project_points']}"),
             html.P(f"Points Required: {node_info['required_points']}"),
-            html.A("Open Document", href=node_info["doc_link"], target="_blank")
+            html.A("Open Document", href=node_info["tech_link"], target="_blank")
         ])
 
         return node_details_content, new_style, True, node_id, clickData  # Keep clickData!
@@ -522,7 +537,28 @@ def create_dash_app(google_creds, sheet_id):
     return app
 
 
+def save_json(data, filename="data.json"):
+    with open(filename, "w") as f:
+        json.dump(data, f, indent=4)
+
+def load_json(filename="data.json"):
+    try:
+        with open(filename, "r") as f:
+            return json.load(f)
+    except FileNotFoundError:
+        return {}  # Return an empty dictionary if file doesn't exist
+
+
 if userAction == "runServer":
+    # define filenames
+    local_json_files = {
+        "techs":"techTree_techs.json",
+        "materials":"techTree_materials.json",
+        "projects":"techTree_projects.json",
+        "progress":"techTree_progress.json",
+        "kits":"techTree_kits.json",
+        "contracts":"techTree_contracts.json"
+    }
     if __name__ == "__main__":
         app = create_dash_app(google_creds, sheet_id)
         app.run_server(debug=True)
