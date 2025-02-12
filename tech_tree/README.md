@@ -137,6 +137,39 @@ progress
 ]
 ```
 
+### techTree_contracts.json
+```
+[
+	{
+		"name":"light up LED",
+		"techs_required": ["ACT002","ACT006",...],
+		"contract_id:":"P001",
+		"dependency":[],
+		"contract_link":"link_here"
+		"materials": [
+			{
+			"material_id":"M001",
+			"material_use": 3
+			},
+			{
+			"material_id":"M002",
+			"material_use": 1
+			},
+			{
+			"material_id":"M003",
+			"material_use": 0
+			}
+		]
+	},
+	{
+		"project_id:":"P002",
+		"dependency":["P001"],
+		...
+	},
+	...
+]
+```
+
 ### techTre_materials.json
 ```
 [
@@ -150,11 +183,14 @@ progress
 		"price":9.00,
 		"count":10,
 		"unit_measure":"handle"
+		"unit_cost":0.90,
 		"material_id":"M001",
 		"sop_link":"",
-		"storage_location":True,
+		"storage_type":"small parts",
+		"storage_location":"ENG",
+		"labelled":True,
 		"current_inventory":7,
-		"desired_inventory":20
+		"desired_inventory":20,
 
 	},
 	{
@@ -260,7 +296,21 @@ progress
 	        	{
 	        		"project_id":"P002",
 	        	}
-	        ]
+	        ],
+			"materials": [
+				{
+				"material_id":"M001",
+				"material_use": 3
+				},
+				{
+				"material_id":"M002",
+				"material_use": 1
+				},
+				{
+				"material_id":"M003",
+				"material_use": 0
+				}
+			]
         },
         {
             "name": "student_02",

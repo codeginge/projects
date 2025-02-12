@@ -1,0 +1,91 @@
+Overview of "Designing Authentic Performance Tasks and Projects" – Jay McTighe & Kristina Doubet
+This book focuses on creating meaningful assessments that go beyond traditional testing by emphasizing real-world applications of knowledge. It provides guidelines for designing performance tasks and projects that measure students’ deeper understanding rather than just surface-level recall.
+
+Key Takeaways from the Book
+Shift from Traditional Assessments to Performance-Based Tasks
+
+Instead of multiple-choice tests or rote assignments, students demonstrate their understanding through projects, case studies, or real-world problem-solving.
+Backward Design (Understanding by Design - UbD)
+
+Start with the end goal in mind (what mastery looks like) and design assessments first, ensuring alignment with learning objectives.
+Essential Components of Performance Tasks
+
+Authenticity: The task should mirror real-world challenges (e.g., designing a bridge for an engineering class rather than just solving equations).
+Student Role: Students take on authentic roles (e.g., a scientist, an engineer, a policymaker).
+Audience: The task should involve an authentic audience, not just the teacher (e.g., presenting findings to a local environmental board).
+Purpose & Impact: Students should see the real-world value of their learning.
+Criteria for Effective Performance Tasks
+
+Clear learning targets tied to competencies/mastery standards.
+An open-ended problem that allows for multiple solutions.
+Opportunities for student choice and creativity.
+A rubric with clear criteria for mastery.
+The Role of Feedback & Iteration
+
+Mastery-based learning requires multiple attempts at a task with structured feedback loops.
+Students should reflect on their performance, revise, and resubmit.
+Key Variables to Track in a Mastery-Based LMS
+If designing a learning resource (like an LMS) based on these principles, McTighe & Doubet would likely suggest tracking:
+
+Competency Progression
+
+Which skills/standards has the student mastered?
+Where are they struggling?
+How many attempts did it take to reach mastery?
+Engagement & Interaction
+
+How much time does a student spend on each task?
+Are they engaging with feedback and revising work?
+Are they making connections between concepts?
+Authenticity & Application
+
+Has the student applied concepts in real-world contexts?
+Are they demonstrating understanding, or just repeating information?
+Assessment Types & Depth of Knowledge (DOK)
+
+Are tasks at a higher cognitive level (application, analysis, synthesis) rather than just recall?
+Are students completing different types of assessments (projects, case studies, discussions)?
+Feedback & Revision History
+
+How frequently does the student revise their work?
+Are they incorporating teacher and peer feedback into improvements?
+Student Autonomy & Choice
+
+Does the student have options in how they demonstrate mastery?
+Are they taking initiative in their learning process?
+Collaboration & Communication
+
+Are students engaging in peer discussions or collaborative projects?
+Are they able to articulate their understanding clearly?
+
+In addition to projects, mastery-based grading often includes a variety of assessments that allow students multiple ways to demonstrate understanding and growth. Some common assessment types include:
+
+1. Formative Assessments (Low-Stakes, Frequent)
+These assessments help gauge progress and provide immediate feedback without penalizing students for mistakes.
+
+Quizzes with Retakes – Students can attempt quizzes multiple times, with feedback guiding improvements.
+Exit Tickets – Short reflections or concept checks at the end of a lesson.
+Concept Maps & Graphic Organizers – Students visually demonstrate their understanding of relationships between concepts.
+Think-Alouds – Students explain their reasoning while solving problems.
+2. Performance-Based Assessments
+These require students to apply their knowledge in authentic ways, similar to projects but often smaller in scale.
+
+Case Studies & Problem-Solving Tasks – Students analyze real-world problems and propose solutions.
+Simulations & Lab Work – Hands-on activities that measure practical application.
+Coding Challenges (for Tech/Engineering) – Timed or untimed coding tasks to assess problem-solving strategies.
+3. Written & Verbal Assessments
+Students explain concepts rather than just solve problems.
+
+Journals & Reflections – Self-assessment on learning progress.
+Essay Responses – Deeper analysis of concepts and their applications.
+Oral Explanations – Students verbally explain how they approached a problem or project.
+4. Peer & Self-Assessments
+These help students reflect on their learning and understand assessment criteria.
+
+Self-Scoring with Rubrics – Students assess their own work before submission.
+Peer Reviews – Structured feedback from classmates using mastery-based criteria.
+5. Portfolio-Based Assessment
+A collection of student work over time, showing progress toward mastery.
+
+Digital or Physical Portfolios – Includes projects, reflections, and assessments to track improvement.
+

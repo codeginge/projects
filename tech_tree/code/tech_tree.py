@@ -230,7 +230,7 @@ def create_resources(json_key_path, sheet_id):
         if resource_id and not tech_link:  # Only process rows with IDs but missing tech_link
             doc_title = f"{resource_id} - {row[headers.index('name')]}"
             doc_sub_title = f"{row[headers.index('type')]} - {row[headers.index('sub_type')]}"
-            tech_link = create_doc_in_subfolder(drive_service, docs_service, sheet_id, "Resources", doc_title, doc_sub_title, doc_template)
+            tech_link = create_doc_in_subfolder(drive_service, docs_service, sheet_id, "Technologies", doc_title, doc_sub_title, doc_template)
             cell_range = f"{chr(65 + tech_link_col_index)}{i}"  # Convert column index to letter
             updates.append({"range": cell_range, "values": [[tech_link]]})
     
