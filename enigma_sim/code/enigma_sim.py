@@ -73,7 +73,12 @@ def generate_keys(date, days, book):
 	}
 
 	'''
+	# turn book input to only uppercase letters
+	book = ''.join(char.upper() for char in book if char.isalpha())
 
+	# create 26 plugboard pairs
+	# create 26 rotors
+	# create 26 reflectors	
 
 
 	return key_sheet
