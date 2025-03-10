@@ -25,6 +25,20 @@ python3 ./enigma_sim.py "I VII IV" "01 10 24" "AY BF CD EG HI JK LM NO PQ RS" "B
 import argparse, time
 
 # functions
+def arg_inputs():
+	parser = argparse.ArgumentParser(description="Enigma Machine Command Parser")
+	parser.add_argument("rotors", type=str)
+	parser.add_argument("ring_setting", type=str)
+	parser.add_argument("plugboard_pairs", type=str)
+	parser.add_argument("reflector", type=str)
+	parser.add_argument("delay", type=float)
+	parser.add_argument("--debug", action="store_true", help="Enable debug mode")
+	parser.add_argument("rotor_positions", type=str)
+	parser.add_argument("input_text", type=str)
+
+	return parser.parse_args()
+
+
 def generate_keys(date, days, book):
 	'''
 	this function takes a date and a book and generates 26 rotors the words in the book and generates a csv 
@@ -102,21 +116,6 @@ def renigma(key_sheet, message):
 			letter = rotor_encryption(letter,rotor_encryption_set, position, ring_setting)
 
 	return changed_message
-
-
-def arg_inputs():
-	parser = argparse.ArgumentParser(description="Enigma Machine Command Parser")
-
-	parser.add_argument("rotors", type=str)
-	parser.add_argument("ring_setting", type=str)
-	parser.add_argument("plugboard_pairs", type=str)
-	parser.add_argument("reflector", type=str)
-	parser.add_argument("delay", type=float)
-	parser.add_argument("--debug", action="store_true", help="Enable debug mode")
-	parser.add_argument("rotor_positions", type=str)
-	parser.add_argument("input_text", type=str)
-
-	return parser.parse_args()
 
 
 def rotor_change(r_pos, rotors):
@@ -354,7 +353,8 @@ def display_process(text, cp_text, r_pos, pos, letter, debug):
     # Join the list back into a string
     modified_cp_text = ''.join(cp_text_list)
 
-    if debug == False: print(modified_cp_text) 
+    if debug == False: 
+    	print(modified_cp_text) 
 
     return modified_cp_text
 
@@ -377,7 +377,7 @@ def run_enigma_sim():
 	for i in range(len(cp_text)):
 		letter = cp_text[i]
 
-		if letter == " ": continue
+		if not letter.isalpha(): continue
 
 		# rotor change
 		r_pos = rotor_change(r_pos, rotors)
