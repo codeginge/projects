@@ -1,4 +1,5 @@
 # V2 JSON Data Structure
+```json
 {
 	"LMS": [
 		"learning_targets":[
@@ -19,7 +20,7 @@
 		        "sub_type":"sheet material", 
 		        "core":true, 
 				"skill_id":"ASS001", 
-				"dependency":[TOO001],
+				"dependency":["TOO001"],
 				"skill_link": "link_here_01",
 			}	
 		],
@@ -36,7 +37,7 @@
 				"project_name":"construct a model RV in foam board",
 				"skills_required": ["TOO01","ASS001"],
 				"project_id:":"P002",
-				"dependency":[P001],
+				"dependency":["P001"],
 				"project_link":"link_here",
 				"materials": ["M001", "M002", "M003"]
 				...
@@ -96,7 +97,7 @@
 		]
 	]
 }
-
+```
 # V1 
 this project aims to 
 -create a techTree from a google sheet to give a flow chart visualization of learning for any subject
