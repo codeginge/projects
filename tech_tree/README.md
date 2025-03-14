@@ -1,3 +1,103 @@
+# V2 JSON Data Structure
+{
+	"LMS": [
+		"learning_targets":[
+		],
+		"skills": [
+			{
+				"skill_name":"exacto blades and box cutters", 
+				"type":"tool", 
+		        "sub_type":"cutting", 
+		        "core":true, 
+				"skill_id":"TOO001", 
+				"dependency":[],
+				"skill_link": "link_here_01",
+			},
+			{
+				"name":"foam board construction", 
+				"type":"assembly", 
+		        "sub_type":"sheet material", 
+		        "core":true, 
+				"skill_id":"ASS001", 
+				"dependency":[TOO001],
+				"skill_link": "link_here_01",
+			}	
+		],
+		"projects": [
+			{
+				"project_name":"build a perfect 1 liter cube",
+				"skills_required": ["TOO01","ASS001"],
+				"project_id:":"P001",
+				"dependency":[],
+				"project_link":"link_here",
+				"materials": ["M001", "M002", "M003"]
+			},
+			{
+				"project_name":"construct a model RV in foam board",
+				"skills_required": ["TOO01","ASS001"],
+				"project_id:":"P002",
+				"dependency":[P001],
+				"project_link":"link_here",
+				"materials": ["M001", "M002", "M003"]
+				...
+			},
+			...
+		],
+		"contracts": [
+			{
+				"contract_name":"foam core glider",
+				"skills_required": ["TOO001","ASS001",...],
+				"contract_id:":"C001",
+				"dependency":[],
+				"contract_link":"link_here"
+				"materials": ["M001", "M002", "M003"]
+			},
+			{
+				"contract_name":"foam core scale model of Eifel tower",
+				"skills_required": ["TOO001","ASS001",...],
+				"contract_id:":"C002",
+				"dependency":[],
+				"contract_link":"link_here"
+				"materials": ["M001", "M002", "M003"]
+			},
+			...
+		],
+		"students":[
+		!!!!!!ADDTHINGSHEREHREHREHR!!!!!!!
+		]
+	],
+	"IMS":[
+		"materials": [
+			{
+				"name":"exacto knife",
+				"type":"tool",
+				"sub_type":"cutting",
+				"fabricated":False,
+				"amz_link":"",
+				"stl_link":"",
+				"price":9.00,
+				"count":10,
+				"unit_measure":"handle"
+				"unit_cost":0.90,
+				"material_id":"M001",
+				"sop_link":"",
+				"storage_type":"small parts",
+				"storage_location":"ENG",
+				"labelled":True,
+				"current_inventory":7,
+				"desired_inventory":20,
+			},
+			{
+				"name":"exacto blade",
+				...
+			}
+		]
+		"orders": [
+		]
+	]
+}
+
+# V1 
 this project aims to 
 -create a techTree from a google sheet to give a flow chart visualization of learning for any subject
 -simplify resouce creation and linking to each technology
@@ -78,6 +178,7 @@ progress
 -links resources (internal or external)
 -projects to show master
 -rubric for each project
+
 
 ## JSON files
 ### techTree_techs.json
