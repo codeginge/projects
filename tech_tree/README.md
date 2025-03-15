@@ -3,13 +3,30 @@
 {
 	"LMS": [
 		"learning_targets":[
+			{
+				"name":"",
+				"type":"",
+				"sub_type":"",
+				"learning_target_id":"LT001",
+				"dependency": [],
+				"learning_target_link":"link_here"
+			},
+			{
+				"name":"",
+				"type":"",
+				"sub_type":"",
+				"learning_target_id":"LT002",
+				"dependency": ["LT001"],
+				"learning_target_link":"link_here"
+			},
+			...
 		],
 		"skills": [
 			{
 				"skill_name":"exacto blades and box cutters", 
 				"type":"tool", 
-		        "sub_type":"cutting", 
-		        "core":true, 
+				"sub_type":"cutting", 
+				"core":true, 
 				"skill_id":"TOO001", 
 				"dependency":[],
 				"skill_link": "link_here_01",
@@ -17,12 +34,13 @@
 			{
 				"name":"foam board construction", 
 				"type":"assembly", 
-		        "sub_type":"sheet material", 
-		        "core":true, 
+				"sub_type":"sheet material", 
+				"core":true, 
 				"skill_id":"ASS001", 
 				"dependency":["TOO001"],
 				"skill_link": "link_here_01",
-			}	
+			},
+			...	
 		],
 		"projects": [
 			{
@@ -40,7 +58,6 @@
 				"dependency":["P001"],
 				"project_link":"link_here",
 				"materials": ["M001", "M002", "M003"]
-				...
 			},
 			...
 		],
@@ -50,7 +67,7 @@
 				"skills_required": ["TOO001","ASS001",...],
 				"contract_id:":"C001",
 				"dependency":[],
-				"contract_link":"link_here"
+				"contract_link":"link_here",
 				"materials": ["M001", "M002", "M003"]
 			},
 			{
@@ -58,13 +75,153 @@
 				"skills_required": ["TOO001","ASS001",...],
 				"contract_id:":"C002",
 				"dependency":[],
-				"contract_link":"link_here"
+				"contract_link":"link_here",
 				"materials": ["M001", "M002", "M003"]
 			},
 			...
 		],
 		"students":[
-		!!!!!!ADDTHINGSHEREHREHREHR!!!!!!!
+	        {
+	            "name": "student_01",
+	            "skills": [
+	                {
+	                	"skill_id:":"TOO001",
+	                	"levels": [
+				        	{
+				        		"level":1,
+				        		"knowledge":False,
+				        		"application":False,
+				        	},
+				        	{
+				        		"level":2,
+				        		"knowledge":False,
+				        		"application":False,
+				        	}
+	        			],
+	        			"comments": [
+	        				{
+	        					"date":"MMDDYYYY",
+	        					"text":"liked this project because.."
+	        				},
+	        				{
+	        					"date":"MMDDYYYY",
+	        					"text":"failed this project because"
+	        				},
+	        				...
+	        			]
+	                },
+	                ...
+	        	],
+	        	"projects": [
+		        	{
+		        		"project_id":"P001",
+	    				"levels":[
+				        	{
+				        		"level":1,
+				        		"knowledge":False,
+				        		"application":False,
+				        		"engagement":False,
+				        		"reflection":False
+				        	},
+				        	{
+				        		"level":2,
+				        		"knowledge":False,
+				        		"application":False,
+				        		"engagement":False,
+				        		"reflection":False
+				        	},
+				        	{
+				        		"level":3,
+				        		"knowledge":False,
+				        		"application":False,
+				        		"engagement":False,
+				        		"reflection":False
+				        	},
+				        	{
+				        		"level":4,
+				        		"knowledge":False,
+				        		"application":False,
+				        		"engagement":False,
+				        		"reflection":False,
+				        	}
+	        			],
+	        			"comments": [
+	        				{
+	        					"date":"MMDDYYYY",
+	        					"text":"liked this project because.."
+	        				},
+	        				{
+	        					"date":"MMDDYYYY",
+	        					"text":"failed this project because"
+	        				},
+	        				...
+	        			]
+		        	},
+		        	...
+		        ],
+		        "contracts": [
+		        	{
+		        		"contract_id":"P001",
+	    				"levels":[
+				        	{
+				        		"level":1,
+				        		"knowledge":False,
+				        		"application":False,
+				        		"engagement":False,
+				        		"reflection":False
+				        	},
+				        	{
+				        		"level":2,
+				        		"knowledge":False,
+				        		"application":False,
+				        		"engagement":False,
+				        		"reflection":False
+				        	},
+				        	{
+				        		"level":3,
+				        		"knowledge":False,
+				        		"application":False,
+				        		"engagement":False,
+				        		"reflection":False
+				        	},
+				        	{
+				        		"level":4,
+				        		"knowledge":False,
+				        		"application":False,
+				        		"engagement":False,
+				        		"reflection":False,
+				        	}
+	        			],
+	        			"comments": [
+	        				{
+	        					"date":"MMDDYYYY",
+	        					"text":"liked this project because.."
+	        				},
+	        				{
+	        					"date":"MMDDYYYY",
+	        					"text":"failed this project because"
+	        				},
+	        				...
+	        			]
+		        	},
+		        	...
+		        ],
+				"materials_used": [
+					{
+					"material_id":"M001",
+					"material_use": 3
+					},
+					{
+					"material_id":"M002",
+					"material_use": 1
+					},
+					{
+					"material_id":"M003",
+					"material_use": 0
+					}
+				]
+	        },
+	        ...
 		]
 	],
 	"IMS":[
@@ -78,7 +235,7 @@
 				"stl_link":"",
 				"price":9.00,
 				"count":10,
-				"unit_measure":"handle"
+				"unit_measure":"handle",
 				"unit_cost":0.90,
 				"material_id":"M001",
 				"sop_link":"",
