@@ -1,4 +1,80 @@
-# V2 JSON Data Structure
+# V2 
+
+## setup
+
+### postgreSQL database
+#### rpi os and ssh setup
+using a rasperry pi 4 and a 32gb sd card, setup the pi using raspberry pi imager. choose rasperry pi 4 as the "raspberry pi device", choose "raspberry pi os light (64-bit)" as the operating system and then choose the sd card as the "storage device". before you image the card make sure that the os is setup to connect to the network you want it connected to for your setup. all programming from here on out wil be done over ssh so setup either ssh through usrname and password or setup some keys for a more secure setup. image this onto the sd card and when complete plug this into the rpi and power it up.
+
+run the following command to connect to rpi through ssh. when prompted, allow ssh and put in the password for the rpi. 
+```
+"ssh user_name@rpi.local"
+```
+
+
+#### install and setup postgreSQL database and user
+now that the rpi is up and running and you are connected through ssh run these command to setup the postgreSQL database we will be using in this case.
+
+```
+sudo apt update && sudo apt upgrade -y
+sudo apt install postgresql -y
+sudo systemctl start postgresql
+sudo systemctl enable postgresql
+```
+run this command to check that the dabase has been built
+```
+sudo systemctl status postgresql
+```
+switch to postgresql user and open postgres shell to create the database and database user
+```
+sudo -i -u postgres
+psql
+CREATE DATABASE techtreedb;
+CREATE USER techtreeuser WITH ENCRYPTED PASSWORD 'your_secure_password';
+\q
+```
+login to techtreedb using postgres user and grant perms to techtreeuser
+```
+psql -U postgres -d techtreedb
+-- Grant CONNECT, CREATE, and usage on the schema
+GRANT CONNECT, CREATE ON DATABASE techtreedb TO techtreeuser;
+GRANT USAGE, CREATE ON SCHEMA public TO techtreeuser;
+
+-- Grant all privileges on the schema and tables
+GRANT ALL PRIVILEGES ON SCHEMA public TO techtreeuser;
+GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO techtreeuser;
+
+-- Grant default privileges for future tables
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO techtreeuser;
+
+-- Ensure the role has the necessary administrative privileges
+ALTER ROLE techtreeuser WITH LOGIN;
+\q
+```
+
+#### make database accessable
+return to the rpi user and edit the line in /etc/postgresql/15/main/postgresql.conf from
+```
+#listen_addresses = 'localhost'
+```
+to
+```
+listen_addresses = '*'
+```
+add the following line at the end of this file /etc/postgresql/15/main/pg_hba.conf
+```
+host    all             all             0.0.0.0/0               md5
+```
+restart postgresql
+```
+sudo systemctl restart postgresql
+```
+
+#### make table for data
+
+## formats
+
+### JSON Data Structure
 ```json
 {
   "LMS": {
