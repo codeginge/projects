@@ -11,7 +11,7 @@ run the following command to connect to rpi through ssh. when prompted, allow ss
 "ssh user_name@rpi.local"
 ```
 
-#### pull git project
+#### pull techtree project from git
 ```
 sudo apt update
 sudo apt install git -y
@@ -47,55 +47,49 @@ switch to postgresql user and open postgres shell to create the database and dat
 ```
 sudo -i -u postgres
 psql
-CREATE DATABASE techtreedb;
-CREATE USER techtreeuser WITH ENCRYPTED PASSWORD 'your_secure_password';
+CREATE DATABASE techdb;
+CREATE USER techuser WITH ENCRYPTED PASSWORD 'your_secure_password';
 \q
 ```
 login to techtreedb using postgres user and grant perms to techtreeuser
 ```
 psql -U postgres -d techtreedb
--- Grant CONNECT, CREATE, and usage on the schema
-GRANT CONNECT, CREATE ON DATABASE techtreedb TO techtreeuser;
-GRANT USAGE, CREATE ON SCHEMA public TO techtreeuser;
-
--- Grant all privileges on the schema and tables
-GRANT ALL PRIVILEGES ON SCHEMA public TO techtreeuser;
-GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO techtreeuser;
-
--- Grant default privileges for future tables
-ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO techtreeuser;
-
--- Ensure the role has the necessary administrative privileges
-ALTER ROLE techtreeuser WITH LOGIN;
-
-ALTER USER techtreeuser CREATEDB;
-CREATE ROLE techtreeadmin LOGIN CREATEDB CREATEROLE INHERIT;
-GRANT techtreeadmin TO techtreeuser;
-GRANT CONNECT ON DATABASE techtreedb TO techtreeuser;
-
-
-\q
+```
+add permissions to techuser in techdb
+```
+GRANT CONNECT, CREATE ON DATABASE techdb TO techuser;
+GRANT USAGE, CREATE ON SCHEMA public TO techuser;
+GRANT ALL PRIVILEGES ON SCHEMA public TO techuser;
+GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO techuser;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO techuser;
+ALTER ROLE techuser WITH LOGIN;
+ALTER USER techuser CREATEDB;
 ```
 
-#### make database accessable
-return to the rpi user and edit the line in /etc/postgresql/15/main/postgresql.conf from
-```
-#listen_addresses = 'localhost'
-```
-to
-```
-listen_addresses = '*'
-```
+#### make database accessable locally to techuser
 add the following line at the end of this file /etc/postgresql/15/main/pg_hba.conf
 ```
-host    all             all             0.0.0.0/0               md5
+local   all             all                                     md5
 ```
 restart postgresql
 ```
 sudo systemctl restart postgresql
 ```
+to make sue it is working try accessing the techdb using the techuser 
+```
+psql -U techuser -d techdb
+```
+if it works you should see something like this
+```
+psql (15.12 (Debian 15.12-0+deb12u2))
+Type "help" for help.
 
-#### make table for data
+techdb=>
+```
+use this command to exit the database
+```
+\q 
+```
 
 ## formats
 
