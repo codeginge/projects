@@ -91,6 +91,19 @@ use this command to exit the database
 \q 
 ```
 
+#### setup python environment on rpi
+run the following command to make rpi4_setup.sh executable and then run it to install python venv
+```
+chmod +x rpi4_setup.sh
+./rpi4_setup.sh
+```
+
+
+## run server
+```
+source myenv/bin/activate 
+```
+
 ## formats
 
 ### JSON Data Structure

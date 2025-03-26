@@ -26,7 +26,7 @@ def psql_connect(psql_db, psql_usr, psql_pswd, psql_hst):
     psql_hst  : string
     """
     # attempt connection
-    conn = psycopg2.connect(dbname=psql_db, user=psql_usr, password=psql_usr, host=psql_hst)
+    conn = psycopg2.connect(dbname=psql_db, user=psql_usr, password=psql_pswd, host=psql_hst)
 
     return(conn)
 
@@ -43,4 +43,4 @@ def psql_push():
     
     return(push_status)
 
-psql_connect("techtreedb","techtreeuser","techtree","techtree.local")
+psql_connect("techdb","techuser","tech","localhost")
