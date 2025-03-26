@@ -11,6 +11,24 @@ run the following command to connect to rpi through ssh. when prompted, allow ss
 "ssh user_name@rpi.local"
 ```
 
+#### pull git project
+```
+sudo apt update
+sudo apt install git -y
+git --version
+git clone https://github.com/codeginge/projects.git
+```
+
+
+#### remove/wipe previous postgresql instance
+```
+sudo systemctl stop postgresql
+sudo apt purge postgresql* -y
+sudo apt autoremove -y
+sudo rm -rf /var/lib/postgresql/
+sudo rm -rf /etc/postgresql/
+sudo rm -rf /var/log/postgresql/
+```
 
 #### install and setup postgreSQL database and user
 now that the rpi is up and running and you are connected through ssh run these command to setup the postgreSQL database we will be using in this case.
@@ -49,6 +67,13 @@ ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO techtreeuser;
 
 -- Ensure the role has the necessary administrative privileges
 ALTER ROLE techtreeuser WITH LOGIN;
+
+ALTER USER techtreeuser CREATEDB;
+CREATE ROLE techtreeadmin LOGIN CREATEDB CREATEROLE INHERIT;
+GRANT techtreeadmin TO techtreeuser;
+GRANT CONNECT ON DATABASE techtreedb TO techtreeuser;
+
+
 \q
 ```
 
