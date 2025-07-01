@@ -2,9 +2,9 @@
 #TODO add #circle and #regions counter below drawing... table of values
 
 # Find the number of regions for all circles from min to max
-time_delay=8
-min=5
-max=8
+time_delay=1
+min=2000
+max=3000
 r=[]
 n_circles=list(range(min,max))
 for c in n_circles:
