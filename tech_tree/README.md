@@ -1,3 +1,43 @@
+# V3
+
+## functions
+1 - import google sheet ground truth
+2 - create json data file for curriculum 
+3 - create json data file for student progression and responce
+
+
+
+generate resources from templates
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # V2 
 
 ## setup

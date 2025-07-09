@@ -1,0 +1,1 @@
+This code automates campsite reservations for campsites that are booked almost imidiately 
