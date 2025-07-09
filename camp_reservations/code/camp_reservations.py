@@ -1,18 +1,6 @@
 '''
 This code will book assateague sites
 
-modify the booking jobs to look like: 
-"
-		("G199", "2025-07-10", "2025-07-24", 14, 5, "rv", "08:59:59.500"),
-		("G199", "2025-07-10", "2025-07-24", 14, 5, "rv", "08:59:59.750"),
-		("G199", "2025-07-10", "2025-07-24", 14, 5, "rv", "09:00:00.000"),
-		("G199", "2025-07-10", "2025-07-24", 14, 5, "rv", "09:00:00.250"),
-		("F143", "2025-07-10", "2025-07-24", 14, 5, "rv", "08:59:59.500"),
-		("F143", "2025-07-10", "2025-07-24", 14, 5, "rv", "08:59:59.750"),
-		("F143", "2025-07-10", "2025-07-24", 14, 5, "rv", "09:00:00.000"),
-		("F143", "2025-07-10", "2025-07-24", 14, 5, "rv", "09:00:00.250"),
-"
-
 EXAMPLE USAGE:
 # build env
 python3 -m venv camp_res
@@ -27,11 +15,27 @@ python3 ./camp_reservations.py "<park>" "<site>" "<arrival>" "<depart>" "<party_
 python3 ./camp_reservations.py "assateague" "G195" "07112026" "07202026" "6" "tent" --debug 
 
 '''
+
+import time, json, random, urllib.parse, sys, ntplib, argparse
 from playwright.sync_api import sync_playwright
-from datetime import datetime
+from datetime import datetime, timedelta
 from multiprocessing import Process
 from threading import Event
-import time, json, random, urllib.parse, sys
+from time import ctime
+
+
+def parse_args():
+	parser = argparse.ArgumentParser(description="Generate booking jobs for campsite reservations.")
+
+	parser.add_argument("--sites", required=True, help="Comma-separated list of site IDs (e.g., F143,E119)")
+	parser.add_argument("--start_date", required=True, help="Start date in YYYY-MM-DD format")
+	parser.add_argument("--nights", type=int, required=True, help="Number of nights")
+	parser.add_argument("--people", type=int, required=True, help="Number of people")
+	parser.add_argument("--site_type", required=True, help="Site type (e.g., rv, tent)")
+	parser.add_argument("--time", type=str, required=True, help="Base time in HH:MM:SS.sss format (e.g., 18:05:00.000)")
+	parser.add_argument("--attempts", type=int, default=1, help="Number of attempts per site")
+
+	return parser.parse_args()
 
 
 def human_delay(min_ms, max_ms):
@@ -47,7 +51,7 @@ def encode_people_count(equipment_category_id, party_size):
 def book_assateague_site(site_id, start_date, end_date, nights, people, site_type, target_time_str):
 	"""
 	example use case:
-	book_assateague_site("Assateague State Park", "Tent Only", "07/20/2025", "07/22/2025", "2", "Tents")
+	book_assateague_site("G199", "2025-07-10", "2025-07-24", 14, 5, "rv", "18:04:59.500")
 	"""
 	reservation_status = False
 
@@ -125,26 +129,72 @@ def book_assateague_site(site_id, start_date, end_date, nights, people, site_typ
 	p.stop()
 	
 
+def get_time_offset(ntp_server='pool.ntp.org'):
+	offset = 0
+	try:
+		client = ntplib.NTPClient()
+		response = client.request(ntp_server)
+		offset = response.offset  # seconds, can be positive or negative
+	except Exception as e:
+		print(f"❌ Failed to get NTP time: {e}")
+	return offset
+
+
+def build_booking_jobs(sites_to_try, start_date, nights, people, site_type, base_time, attempts):
+    """
+    Builds a list of booking job tuples like:
+    ("G199", "2025-07-10", "2025-07-24", 14, 5, "rv", "18:04:59.500")
+    """
+
+    jobs = []
+
+    # Calculate end date
+    end_date_dt = datetime.strptime(start_date, "%Y-%m-%d") + timedelta(days=nights)
+    end_date = end_date_dt.strftime("%Y-%m-%d")
+
+    # Parse base time string into datetime object (using today's date)
+    today = datetime.today().date()
+    base_dt = datetime.strptime(base_time, "%H:%M:%S.%f")
+    base_dt = datetime.combine(today, base_dt.time())
+
+    offset = get_time_offset()  # returns a timedelta
+    for site in sites_to_try:
+        for attempt in range(attempts):
+            attempt_time = base_dt + timedelta(seconds=offset) + timedelta(milliseconds=100 * attempt)
+            attempt_time_str = attempt_time.strftime("%H:%M:%S.%f")[:-3]
+            job = (
+                site,
+                start_date,
+                end_date,
+                nights,
+                people,
+                site_type,
+                attempt_time_str
+            )
+            jobs.append(job)
+    return jobs
+
+
 def launch_booking_job(args):
 	book_assateague_site(*args)
 
 if __name__ == "__main__":
-	# List of inputs for multiple booking jobs
-	booking_jobs = [
-		("G199", "2025-07-10", "2025-07-24", 14, 5, "rv", "18:04:59.500"),
-		("G199", "2025-07-10", "2025-07-24", 14, 5, "rv", "18:04:59.750"),
-		("G199", "2025-07-10", "2025-07-24", 14, 5, "rv", "18:05:00.000"),
-		("G199", "2025-07-10", "2025-07-24", 14, 5, "rv", "18:05:00.250"),
-		("F143", "2025-07-10", "2025-07-24", 14, 5, "rv", "18:04:59.500"),
-		("F143", "2025-07-10", "2025-07-24", 14, 5, "rv", "18:04:59.750"),
-		("F143", "2025-07-10", "2025-07-24", 14, 5, "rv", "18:05:00.000"),
-		("F143", "2025-07-10", "2025-07-24", 14, 5, "rv", "18:05:00.250"),
-	]
+	args = parse_args()
+
+	sites_to_try = args.sites.split(",")
+	start_date = args.start_date
+	nights = args.nights
+	people = args.people
+	site_type = args.site_type
+	base_time = args.time
+	attempts = args.attempts
+	booking_jobs = build_booking_jobs(sites_to_try, start_date, nights, people, site_type, base_time, attempts)
 
 	processes = []
 
 	try:
 		for args in booking_jobs:
+			print(f"Starting reservation attempt using {args}")
 			p = Process(target=launch_booking_job, args=(args,))
 			p.start()
 			processes.append(p)
