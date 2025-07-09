@@ -2,17 +2,22 @@
 This code will book assateague sites
 
 EXAMPLE USAGE:
-# build env
+# build environment
 python3 -m venv camp_res
 source camp_res/bin/activate 
+pip install ntplib
 pip install playwright
 playwright install
 
-# run with variables
-python3 ./camp_reservations.py "<park>" "<site>" "<arrival>" "<depart>" "<party_size>" "<equipment>" --debug 
-
-# run example
-python3 ./camp_reservations.py "assateague" "G195" "07112026" "07202026" "6" "tent" --debug 
+# run with example
+python3 ./camp_reservations.py \
+  --sites F143,E119 \
+  --start_date 2025-07-10 \
+  --people 5 \
+  --nights 14 \
+  --site_type rv \
+  --time "09:00:00.000" \
+  --attempts 2
 
 '''
 
