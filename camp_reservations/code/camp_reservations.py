@@ -1,15 +1,24 @@
 '''
 This code will book assateague sites
 
+TODO: 
+- get payment working  (with cli input at start)
+- get headless working all the way through payment
+
 EXAMPLE USAGE:
 # build environment
 python3 -m venv camp_res
 source camp_res/bin/activate 
+pip install requests
 pip install ntplib
 pip install playwright
 playwright install
 
 # run with example
+
+CHECK SYSTEM TIME IS correct
+
+RESERVE SITE 
 python3 ./camp_reservations.py \
   --sites F143,E119 \
   --start_date 2025-07-10 \
@@ -19,9 +28,19 @@ python3 ./camp_reservations.py \
   --time "09:00:00.000" \
   --attempts 2
 
+RESERVE SITE HEADLESS
+python3 ./camp_reservations.py \
+  --sites F143,E119 \
+  --start_date 2025-07-10 \
+  --people 5 \
+  --nights 14 \
+  --site_type rv \
+  --time "09:00:00.000" \
+  --attempts 2 \
+  --run_headless
 '''
 
-import time, json, random, urllib.parse, sys, ntplib, argparse
+import time, json, random, urllib.parse, sys, ntplib, argparse, requests, urllib3
 from playwright.sync_api import sync_playwright
 from datetime import datetime, timedelta
 from multiprocessing import Process
@@ -39,6 +58,8 @@ def parse_args():
 	parser.add_argument("--site_type", required=True, help="Site type (e.g., rv, tent)")
 	parser.add_argument("--time", type=str, required=True, help="Base time in HH:MM:SS.sss format (e.g., 18:05:00.000)")
 	parser.add_argument("--attempts", type=int, default=1, help="Number of attempts per site")
+	parser.add_argument("--delay", type=int, default=1, help="Number of milliseconds of delay between attempts")
+	parser.add_argument("--run_headless", action="store_true", help="Run in headless mode")
 
 	return parser.parse_args()
 
@@ -48,22 +69,86 @@ def human_delay(min_ms, max_ms):
 
 
 def encode_people_count(equipment_category_id, party_size):
-    arr = [[equipment_category_id, None, party_size, None]]
-    json_str = json.dumps(arr, separators=(',', ':')).replace("None", "null")
-    return urllib.parse.quote(json_str)
+	arr = [[equipment_category_id, None, party_size, None]]
+	json_str = json.dumps(arr, separators=(',', ':')).replace("None", "null")
+	return urllib.parse.quote(json_str)
 
 
-def book_assateague_site(site_id, start_date, end_date, nights, people, site_type, target_time_str):
+def get_ntp_clock_offset(ntp_servers=None, timeout=5):
+    import ntplib
+    client = ntplib.NTPClient()
+    ntp_servers = ntp_servers or [
+        "time.google.com",
+        "time.windows.com",
+        "time.apple.com",
+        "pool.ntp.org"
+    ]
+    
+    for server in ntp_servers:
+        try:
+            response = client.request(server, version=3, timeout=timeout)
+            return response.offset, response.delay
+        except Exception as e:
+            print(f"Failed to get NTP from {server}: {e}")
+    
+    print("All NTP attempts failed.")
+    return 0.0, 0.0  # fallback to no offset
+
+
+def get_site_response_delay(website, attempts=5, timeout=3):
+	"""
+	Measures the average HTTP HEAD request round-trip delay to the given website.
+
+	Parameters:
+		website (str): The target website URL (including http:// or https://).
+		attempts (int): Number of attempts to average (default 5).
+		timeout (int or float): Request timeout in seconds (default 3).
+
+	Returns:
+		float or None: Average delay in seconds, or None if all attempts fail.
+	"""
+	headers = {
+		"User-Agent": (
+			"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
+			"(KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36"
+		),
+		"Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+		"Accept-Language": "en-US,en;q=0.5",
+		"Referer": "https://parkreservations.maryland.gov/"
+	}
+
+	# disable verify=False warnings
+	urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+	delays = []
+	for _ in range(attempts):
+		try:
+			start = time.time()
+			response = requests.get(website, headers=headers, timeout=timeout, verify=False)
+			end = time.time()
+			delays.append(end - start)
+		except requests.RequestException:
+			# Ignore this attempt if it fails
+			continue
+
+	if delays:
+		return sum(delays) / len(delays)
+	else:
+		return None
+
+
+def book_assateague_site(site_id, start_date, end_date, nights, people, site_type, target_time_str, run_headless):
 	"""
 	example use case:
 	book_assateague_site("G199", "2025-07-10", "2025-07-24", 14, 5, "rv", "18:04:59.500")
+
+	availability Update Selector = "#mat-mdc-dialog-title-0", Text = "Avaliability Update"
 	"""
 	reservation_status = False
 
 	# pull up reservation page in chromium
 	from playwright.sync_api import sync_playwright
 	p = sync_playwright().start()
-	browser = p.chromium.launch(headless=False)
+	browser = p.chromium.launch(headless=run_headless)
 	page = browser.new_page()
 	if (site_id[0]=="E" or site_id[0]=="F"): map_id = "-2147483645"
 	if (site_id[0]=="G"): map_id = "-2147483644"
@@ -86,6 +171,7 @@ def book_assateague_site(site_id, start_date, end_date, nights, people, site_typ
 		"peopleCapacityCategoryCounts": encode_people_count(equipment_id, people),
 		# Format searchTime to milliseconds precision to match example
 		"searchTime": datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f")[:-3],
+		#"searchTime": "2025-07-10"
 		# Encode flexibleSearch and filterData only once
 		"flexibleSearch": urllib.parse.quote('[false,false,null,1]'),
 		"filterData": urllib.parse.quote('{}'),
@@ -99,7 +185,6 @@ def book_assateague_site(site_id, start_date, end_date, nights, people, site_typ
 
 	# pass cookie consent
 	page.click('button:has-text("I Consent")')
-	print("Popup dismissed.")
 
 	# select site
 	human_delay(300,900)
@@ -108,12 +193,27 @@ def book_assateague_site(site_id, start_date, end_date, nights, people, site_typ
 	page.click(site_selector)
 
 	# wait until current time is after reservation time
+	target_time = datetime.combine(datetime.today().date(), datetime.strptime(target_time_str, "%H:%M:%S.%f").time())
+	offset_applied = False
+	delay_modified = False
+	loop_delay = 0.1
 	while True:
-		now = datetime.now().strftime("%H:%M:%S.%f"[:-3])
-		if now >= target_time_str:
+		now = datetime.now()
+		if (offset_applied == False and (now + timedelta(seconds=30))>=target_time):
+			offset_applied = True
+			time_offset = timedelta(seconds=get_ntp_clock_offset()[0]) + timedelta(seconds=(get_site_response_delay("https://parkreservations.maryland.gov/") / 2))
+			print(f"Calculated latencey: {time_offset}")
+			adjusted_target_time = target_time - time_offset
+			print(f"Adjusted target time for reserving site {site_id} is {adjusted_target_time.strftime('%H:%M:%S.%f')}")
+		if (offset_applied == True and delay_modified==False and (now + timedelta(seconds=5))>=target_time):
+			loop_delay = 0.005
+			delay_modified == True
+		if (offset_applied==True and now >= adjusted_target_time):
+			print(f"now: {now} adjusted_target_time {adjusted_target_time}")
 			page.click('button:has-text("Reserve")')
+			print(f"Reservation attempt for site {site_id} at {(datetime.now()-timedelta(seconds=get_ntp_clock_offset()[0])).strftime('%H:%M:%S.%f')} NTP")
 			break
-		time.sleep(0.1)  # Poll every 100ms
+		time.sleep(loop_delay)  # Poll every 100ms
 
 	# get failed pop-up dialog close browser
 	try:
@@ -134,50 +234,39 @@ def book_assateague_site(site_id, start_date, end_date, nights, people, site_typ
 	p.stop()
 	
 
-def get_time_offset(ntp_server='pool.ntp.org'):
-	offset = 0
-	try:
-		client = ntplib.NTPClient()
-		response = client.request(ntp_server)
-		offset = response.offset  # seconds, can be positive or negative
-	except Exception as e:
-		print(f"❌ Failed to get NTP time: {e}")
-	return offset
+def build_booking_jobs(sites_to_try, start_date, nights, people, site_type, base_time, attempts, delay, run_headless):
+	"""
+	Builds a list of booking job tuples like:
+	("G199", "2025-07-10", "2025-07-24", 14, 5, "rv", "18:04:59.500")
+	"""
 
+	jobs = []
 
-def build_booking_jobs(sites_to_try, start_date, nights, people, site_type, base_time, attempts):
-    """
-    Builds a list of booking job tuples like:
-    ("G199", "2025-07-10", "2025-07-24", 14, 5, "rv", "18:04:59.500")
-    """
+	# Calculate end date
+	end_date_dt = datetime.strptime(start_date, "%Y-%m-%d") + timedelta(days=nights)
+	end_date = end_date_dt.strftime("%Y-%m-%d")
 
-    jobs = []
+	# Parse base time string into datetime object (using today's date)
+	today = datetime.today().date()
+	base_dt = datetime.strptime(base_time, "%H:%M:%S.%f")
+	base_dt = datetime.combine(today, base_dt.time())
 
-    # Calculate end date
-    end_date_dt = datetime.strptime(start_date, "%Y-%m-%d") + timedelta(days=nights)
-    end_date = end_date_dt.strftime("%Y-%m-%d")
-
-    # Parse base time string into datetime object (using today's date)
-    today = datetime.today().date()
-    base_dt = datetime.strptime(base_time, "%H:%M:%S.%f")
-    base_dt = datetime.combine(today, base_dt.time())
-
-    offset = get_time_offset()  # returns a timedelta
-    for site in sites_to_try:
-        for attempt in range(attempts):
-            attempt_time = base_dt + timedelta(seconds=offset) + timedelta(milliseconds=100 * attempt)
-            attempt_time_str = attempt_time.strftime("%H:%M:%S.%f")[:-3]
-            job = (
-                site,
-                start_date,
-                end_date,
-                nights,
-                people,
-                site_type,
-                attempt_time_str
-            )
-            jobs.append(job)
-    return jobs
+	for site in sites_to_try:
+		for attempt in range(attempts):
+			attempt_time = base_dt + timedelta(milliseconds=delay * attempt)
+			attempt_time_str = attempt_time.strftime("%H:%M:%S.%f")
+			job = (
+				site,
+				start_date,
+				end_date,
+				nights,
+				people,
+				site_type,
+				attempt_time_str,
+				run_headless
+			)
+			jobs.append(job)
+	return jobs
 
 
 def launch_booking_job(args):
@@ -193,7 +282,9 @@ if __name__ == "__main__":
 	site_type = args.site_type
 	base_time = args.time
 	attempts = args.attempts
-	booking_jobs = build_booking_jobs(sites_to_try, start_date, nights, people, site_type, base_time, attempts)
+	delay = args.delay
+	run_headless = args.run_headless
+	booking_jobs = build_booking_jobs(sites_to_try, start_date, nights, people, site_type, base_time, attempts, delay, run_headless)
 
 	processes = []
 
