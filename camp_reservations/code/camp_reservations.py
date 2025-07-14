@@ -290,6 +290,7 @@ if __name__ == "__main__":
 
 	try:
 		for args in booking_jobs:
+			human_delay(300,900)
 			print(f"Starting reservation attempt using {args}")
 			p = Process(target=launch_booking_job, args=(args,))
 			p.start()
