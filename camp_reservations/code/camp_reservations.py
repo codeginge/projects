@@ -290,7 +290,8 @@ if __name__ == "__main__":
 
 	try:
 		for args in booking_jobs:
-			human_delay(300,900)
+			site_response_time = get_site_response_delay("https://parkreservations.maryland.gov/")
+			human_delay(site_response_time, site_response_time + 1500)
 			print(f"Starting reservation attempt using {args}")
 			p = Process(target=launch_booking_job, args=(args,))
 			p.start()
