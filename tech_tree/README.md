@@ -2,13 +2,59 @@
 
 ## functions
 1 - import google sheet ground truth
+
 2 - create json data file for curriculum 
+
 3 - create json data file for student progression and responce
 
+4 - hold updates from users in a queue that updates every minute if there are any updates
 
+5 - update google sheet from json and queued updates from users
+
+
+## processes
+1 - web service (user interaction handling)
+	1a - show user their tech tree and provide links to docs for learning
+	1b - put user input into an update queue that will get pushed by
+
+2 - data handler (avoid data collisions)
+	2a - keeps information in google sheet, json data set, and user input queue up to date
+	2b - creates resources
+	2c - removes resources (if marked "delete" on google sheet, all related resources are deleted)
 
 generate resources from templates
 
+
+## JSON Data Structure
+{
+	"LMS": [
+		{
+			"name":"",
+			"type":"",
+			"sub_type":"",
+			"core":"",
+			"id":"",
+			"dependency":"",
+			"doc_link":""
+		},
+	]
+	"IMS":{
+		{
+			"name":"",
+			"type":"",
+			"sub_type":"",
+			"id":"",
+			"sop_link":"",
+			"unit_cost":"",
+			"stock":0,
+			"room":"",
+			"area":"",
+			"bin":0,
+			"storage_id":""
+		},
+	]
+	}
+}
 
 
 
