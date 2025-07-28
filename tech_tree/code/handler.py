@@ -33,7 +33,60 @@ def pull_gsheet_data (json_key_path, sheet_id, pages):
     return gsheet_data
 
 
-#def update_gsheet_from_json(json_key_path, json_file, gsheet_data, pages, headers):
+def update_gsheet_from_json(json_key_path, json_file, sheet_id, pages, headers):
+    '''
+    update gsheets from json file fill in "id" and "doc_link" items
+    '''
+    try:
+        with open(json_file, "r") as file:
+            json_data = json.load(file)
+    except FileNotFoundError:
+        print(f"{json_file} does not exist. Creating new file in that location.")
+        return false
+
+    creds = Credentials.from_service_account_file(json_key_path, scopes=["https://www.googleapis.com/auth/spreadsheets"])
+    client = gspread.authorize(creds)
+
+    for page in pages:
+        sheet = client.open_by_key(sheet_id).worksheet(page)
+        headers = sheet.row_values(2)  # Assumes headers in row 1
+        rows = sheet.get_all_values()
+        name_col_index = headers.index("name")
+        name_list = [row[name_col_index] for row in rows[2:]]  # Data starts at row 3
+
+        for entry in json_data:
+            entry_name = entry["name"]
+            entry_id = entry["id"]
+            entry_doc_link = entry["doc_link"]
+
+            if len(entry_id) == 0:
+                print(f"Missing ID for {entry_name}")
+                continue
+
+            if page[0].upper() != entry_id[0]:
+                continue  # skip mismatched pages
+
+            if entry_name in name_list:
+                row_index = name_list.index(entry_name) + 3  # +3 = skip header + 0-indexed
+                # Update only "id" and "doc_link"
+                id_col = headers.index("id") + 1
+                doc_link_col = headers.index("doc_link") + 1
+
+                existing_id = sheet.cell(row_index, id_col).value
+                existing_doc_link = sheet.cell(row_index, doc_link_col).value
+
+                if not existing_id:
+                    sheet.update_cell(row_index, id_col, entry_id)
+                    print(f"Updated '{entry_name}' in {page} with ID: {entry_id}")
+                if not existing_doc_link:
+                    sheet.update_cell(row_index, doc_link_col, entry_doc_link)
+                    print(f"Updated '{entry_name}' in {page} with doc_link: {entry_doc_link}")
+                
+            else:
+                # Append full row
+                row_to_add = [entry.get(col, "") for col in headers]
+                sheet.append_row(row_to_add)
+                print(f"Added '{entry_name}' to {page}")
 
 
 def update_json_from_gsheet(json_key_path, json_file, gsheet_data, pages, headers):
@@ -74,6 +127,7 @@ def update_json_from_gsheet(json_key_path, json_file, gsheet_data, pages, header
             # create resource if it is empty
             if not entry["doc_link"]:
                 entry, all_ids = create_resource(json_key_path, entry, page, all_ids)
+                print(f"Created resource for {entry["name"]}")
 
             gsheet_data_json.append(entry)
 
@@ -82,6 +136,7 @@ def update_json_from_gsheet(json_key_path, json_file, gsheet_data, pages, header
     if json_diff:
         for entry in json_diff:
             clean_resource(json_key_path, entry)
+            print(f"Cleaned up resource for {entry["name"]}")
         print(f"The following json data was removed to keep up to date with gsheet. \n{json_diff}")
 
     try:
@@ -157,6 +212,8 @@ if __name__ == "__main__":
     ims_pages = ["materials"]
     ims_headers = ["name","type","sub_type","id","doc_link","unit_cost","stock","room","area","bin","storage_id"]
 
+    # Pull data from gsheet, update local json file, create ids and resources, update sheet with resources and resource ids
     gsheet_data = pull_gsheet_data(gcreds, sheet_id, lms_pages)
     update_json_from_gsheet(gcreds, lms_json_file, gsheet_data, lms_pages, lms_headers)
+    update_gsheet_from_json(gcreds, lms_json_file, sheet_id, lms_pages, lms_headers)
    
