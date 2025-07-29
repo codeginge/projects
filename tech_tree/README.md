@@ -26,44 +26,60 @@
 	1a -Done- keeps information in google sheet, and json data set up to date
 	1b -Done- creates resources from template
 	1c -Done- removes resources (if at least doc_link and id are deleted on google sheet)
-	2a -InProgress- go through list of people on status page and create student and teacher login creds
-	3a -NotStarted- per student keep ids up to date with resource ids for techs, projects and contracts
+	2a -Done- go through list of people on status page and create student and teacher login creds
+	3a -InProgress- per student keep ids up to date with resource ids for techs, projects and contracts
 	4a -NotStarted- run through user input queue and update comments from student inputs
 	4b -NotStarted- run through user input queue and update completion from teacher inputs
 
 
 
-## JSON Data Structure
-{
-	"LMS": [
-		{
-			"name":"",
-			"type":"",
-			"sub_type":"",
-			"core":"",
-			"id":"",
-			"dependency":"",
-			"doc_link":""
+## JSON Data Structures
+### ims_data.json
+[
+	{
+		"name":"",
+		"type":"",
+		"sub_type":"",
+		"core":"",
+		"id":"",
+		"dependency":"",
+		"doc_link":""
+	},
+]	
+### status.json
+[
+	{
+		"first":"",
+		"last":"",
+		"class":"",
+		"type":"",
+		"username":"",
+		"password":"",
+		"overall": {
+			"tech_count": 0,
+			"tech_mastery": 0,
+			"tech_completion":0,
+			"project_count": 0,
+			"project_mastery": 0,
+			"project_completion":0,
+			"contract_count": 0,
+			"contract_mastery": 0,
+			"contract_completion":0
 		},
-	]
-	"IMS":{
-		{
-			"name":"",
-			"type":"",
-			"sub_type":"",
-			"id":"",
-			"sop_link":"",
-			"unit_cost":"",
-			"stock":0,
-			"room":"",
-			"area":"",
-			"bin":0,
-			"storage_id":""
-		},
-	]
+		"items": [
+			{			
+				"id":"",
+				"completion":0,
+				"comments":[
+					{
+						"date":"",
+						"comment":""
+					}
+				]
+			}
+		]	
 	}
-}
-
+]
 
 
 

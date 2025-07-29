@@ -19,7 +19,7 @@ def parse_args():
     parser.add_argument("--gcreds", required=True, help="Location of google credential json file.")
     parser.add_argument("--sheet_id", required=True, help="Name of google sheet to use.")
     parser.add_argument("--lms_json_file", required=True, help="Location of lms json file.")
-    parser.add_argument("--ims_json_file", required=True, help="Location of ims json file.")
+    parser.add_argument("--status_json_file", required=True, help="Location of status json file.")
     
     return parser.parse_args()
 
@@ -244,12 +244,30 @@ def create_resource(json_key_path, entry, page, all_ids):
     return entry, all_ids
 
 
+def update_status_json_from_gsheet(json_key_path, json_file, sheet_id, status_page):
+    try:
+        with open(json_file, "r") as file:
+            old_data = json.load(file)
+    except FileNotFoundError:
+        print(f"{json_file} does not exist. Creating new file in that location.")
+        old_data = [] 
+
+    creds = Credentials.from_service_account_file(json_key_path, scopes=["https://www.googleapis.com/auth/spreadsheets"])
+    client = gspread.authorize(creds)
+    status_data = client.open_by_key(sheet_id).worksheet(status_page).get_all_values()
+
+    try:
+        with open(json_file, "w") as file:
+            json.dump(status_data, file, indent=4)
+    except Exception as e:
+        print(f"Error writing JSON file: {e}")
+
 if __name__ == "__main__":
     args = parse_args()
     gcreds = args.gcreds
     sheet_id = args.sheet_id
     lms_json_file = args.lms_json_file
-    ims_json_file = args.ims_json_file
+    status_json_file = args.status_json_file
 
     lms_pages = ["techs", "projects", "contracts"]
     lms_headers = ["name", "type", "sub_type", "core", "id", "dependency", "doc_link"]
@@ -264,7 +282,4 @@ if __name__ == "__main__":
     # setup/update users
     status_page = "status"
     update_user_creds(gcreds, sheet_id, status_page)
-
-    # TODO Add in IMS
-    ## ims_pages = ["materials"]
-    ## ims_headers = ["name","type","sub_type","id","doc_link","unit_cost","stock","room","area","bin","storage_id"]
+    update_status_json_from_gsheet(gcreds, status_json_file, sheet_id, status_page)
