@@ -5,7 +5,7 @@ and organizes them based on their dependent techs. this code will:
 Example CMD:
 python3 -m venv myenv
 source myenv/bin/activate 
-pip install graphviz gspread gspread-formatting google-auth google-api-python-client google-auth-httplib2 google-auth-oauthlib dash plotly networkx numpy
+pip install graphviz gspread gspread-formatting google-auth google-api-python-client google-auth-httplib2 google-auth-oauthlib dash plotly networkx numpy nltk
 
 python3 ./tech_tree.py <path_to_google_api_credentials>.json <google_sheet_id> userAction
 

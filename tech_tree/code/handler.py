@@ -3,8 +3,10 @@ Last updated: 7/7/23
 By: Michael Roberts
 '''
 
-import json, argparse, gspread
+import json, argparse, gspread, nltk, random, string
 
+nltk.download('words')
+from nltk.corpus import words
 from gspread_formatting import *
 from google.oauth2.service_account import Credentials
 from googleapiclient.discovery import build
@@ -20,6 +22,49 @@ def parse_args():
     parser.add_argument("--ims_json_file", required=True, help="Location of ims json file.")
     
     return parser.parse_args()
+
+
+def create_username(first_name, last_name):
+    word_list = [w.lower() for w in words.words()]  # lowercase for consistency
+    first_letter_first_name = first_name[0].lower()
+    first_letter_last_name = last_name[0].lower()
+    first_name_matches = [w for w in word_list if w.startswith(first_letter_first_name.lower())]
+    last_name_matches = [w for w in word_list if w.startswith(first_letter_last_name.lower())]
+    first_word = random.choice(first_name_matches) if first_name_matches else None
+    second_word = random.choice(last_name_matches) if last_name_matches else None
+    number = random.randint(10, 999)
+    username = f"{first_word}_{second_word}_{number}"
+    return username
+
+
+def create_password(num_words, num_digits):
+    word_list = [w.lower() for w in words.words() if w.isalpha() and len(w) >= 4]
+    chosen_words = random.sample(word_list, num_words)
+    digits = ''.join(random.choices(string.digits, k=num_digits))
+    password = ''.join(chosen_words) + digits
+    return password
+
+
+def update_user_creds(json_key_path, sheet_id, status_page):
+    creds = Credentials.from_service_account_file(json_key_path, scopes=["https://www.googleapis.com/auth/spreadsheets"])
+    client = gspread.authorize(creds)
+    worksheet = client.open_by_key(sheet_id).worksheet(status_page)
+    status_data = worksheet.get_all_values()
+    headers = status_data[1]
+    username_col = headers.index("username") + 1  
+    password_col = headers.index("password") + 1
+    for i, row in enumerate(status_data[1:], start=2):  # sheet row numbers start at 1
+        row_dict = dict(zip(headers, row))
+        first_name = str(row_dict.get("first","").lower())
+        last_name = str(row_dict.get("last","").lower())
+        if not row_dict.get("username","").lower():    
+            username = create_username(first_name, last_name)
+            print(f"Created username '{username}' for {last_name}, {first_name}")
+            worksheet.update_cell(i, username_col, username)
+        if not row_dict.get("password","").lower():
+            password = create_password(3,4)
+            print(f"Created password '{password}' for {last_name}, {first_name}")
+            worksheet.update_cell(i, password_col, password)
 
 
 def pull_gsheet_data (json_key_path, sheet_id, pages):
@@ -207,13 +252,19 @@ if __name__ == "__main__":
     ims_json_file = args.ims_json_file
 
     lms_pages = ["techs", "projects", "contracts"]
-    lms_headers = ["name","type","sub_type","core","id","dependency","doc_link"]
-    
-    ims_pages = ["materials"]
-    ims_headers = ["name","type","sub_type","id","doc_link","unit_cost","stock","room","area","bin","storage_id"]
+    lms_headers = ["name", "type", "sub_type", "core", "id", "dependency", "doc_link"]
 
-    # Pull data from gsheet, update local json file, create ids and resources, update sheet with resources and resource ids
+    # Pull data from gsheet
     gsheet_data = pull_gsheet_data(gcreds, sheet_id, lms_pages)
+    # update local json file and create ids and doc_links that are missing
     update_json_from_gsheet(gcreds, lms_json_file, gsheet_data, lms_pages, lms_headers)
+    # update google sheet with new ids and doc_links
     update_gsheet_from_json(gcreds, lms_json_file, sheet_id, lms_pages, lms_headers)
-   
+
+    # setup/update users
+    status_page = "status"
+    update_user_creds(gcreds, sheet_id, status_page)
+
+    # TODO Add in IMS
+    ## ims_pages = ["materials"]
+    ## ims_headers = ["name","type","sub_type","id","doc_link","unit_cost","stock","room","area","bin","storage_id"]
