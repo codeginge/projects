@@ -298,7 +298,7 @@ def update_status_json_from_gsheet(json_key_path, json_file, sheet_id, status_pa
     for row in status_data[2:]:
         entry = dict(zip(headers, row))
         json_entry = transform_user_entry(entry)
-        new_data.append(json_entry)
+        new_data.append(json_entry[0])
 
     try:
         with open(json_file, "w") as file:
@@ -349,6 +349,7 @@ if __name__ == "__main__":
     update_json_from_gsheet(gcreds, lms_json_file, gsheet_data, lms_pages, lms_headers)
     # update google sheet with new ids and doc_links
     update_gsheet_from_json(gcreds, lms_json_file, sheet_id, lms_pages, lms_headers)
+    time.sleep(60)
 
     # setup/update users
     status_page = "status"

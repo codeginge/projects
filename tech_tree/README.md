@@ -14,7 +14,7 @@
 
 ## processes
 1 - web service (user interaction handling)
-	1a -NotStarted- log user in with username and password
+	1a -Done- log user in with username and password
 	2a -NotStarted- show student users their tech tree and provide links to docs for learning
 	2b -NotStarted- allow students to comment on items in the tech tree
 	2c -NotStarted- put student comments into user_input_json_file 
