@@ -1,9 +1,9 @@
 '''
-Last updated: 7/7/23
+Last updated: 7/29/25
 By: Michael Roberts
 '''
 
-import json, argparse, gspread, nltk, random, string
+import json, argparse, gspread, nltk, random, string, time
 
 nltk.download('words')
 from nltk.corpus import words
@@ -244,6 +244,42 @@ def create_resource(json_key_path, entry, page, all_ids):
     return entry, all_ids
 
 
+def transform_user_entry(entry):
+    # Core fields with fallbacks
+    transformed = {
+        "first": entry.get("first", ""),
+        "last": entry.get("last", ""),
+        "class": entry.get("class", ""),  # capitalize handling
+        "type": entry.get("type", ""),
+        "username": entry.get("username", ""),
+        "password": entry.get("password", ""),
+        "tech_count": int(entry.get("tech_count", 0) or 0),
+        "tech_mastery": int(entry.get("tech_mastery", 0) or 0),
+        "tech_completion": int(entry.get("tech_completion", 0) or 0),
+        "project_count": int(entry.get("proj_count", 0) or 0),
+        "project_mastery": int(entry.get("proj_mastery", 0) or 0),
+        "project_completion": int(entry.get("proj_completion", 0) or 0),
+        "contract_count": int(entry.get("contract_count", 0) or 0),
+        "contract_mastery": int(entry.get("contract_mastery", 0) or 0),
+        "contract_completion": int(entry.get("contract_completion", 0) or 0),
+        "raw_data": []
+    }
+
+    # Find all raw data items and group them
+    raw_data = list(entry.items())[15:]
+    for i in range(0, len(raw_data), 2):
+        key, value = raw_data[i]
+        comments = raw_data[i + 1][1] if i + 1 < len(raw_data) else ""
+        raw_item = {
+            "id": key,
+            "points": int(value) if value.strip().isdigit() else 0,
+            "comments": comments
+        }
+        transformed["raw_data"].append(raw_item)
+
+    return [transformed]
+
+
 def update_status_json_from_gsheet(json_key_path, json_file, sheet_id, status_page):
     try:
         with open(json_file, "r") as file:
@@ -256,11 +292,46 @@ def update_status_json_from_gsheet(json_key_path, json_file, sheet_id, status_pa
     client = gspread.authorize(creds)
     status_data = client.open_by_key(sheet_id).worksheet(status_page).get_all_values()
 
+    # TODO Start here!
+    new_data = []
+    headers = status_data[1]
+    for row in status_data[2:]:
+        entry = dict(zip(headers, row))
+        json_entry = transform_user_entry(entry)
+        new_data.append(json_entry)
+
     try:
         with open(json_file, "w") as file:
-            json.dump(status_data, file, indent=4)
+            json.dump(new_data, file, indent=4)
     except Exception as e:
         print(f"Error writing JSON file: {e}")
+
+
+def update_status_ids(json_key_path, lms_json_file, sheet_id, status_page):
+    # get all ids from lms_pages
+    try:
+        with open(lms_json_file, "r") as file:
+            lms_data = json.load(file)
+    except FileNotFoundError:
+        print(f"{json_file} does not exist. Can not update status ids.")
+        return false
+    all_ids = []
+    for entry in lms_data:
+        all_ids.append(entry["id"])
+    # for all ids not in status page, add two columns id and id_comments in the header row 
+    creds = Credentials.from_service_account_file(json_key_path, scopes=["https://www.googleapis.com/auth/spreadsheets"])
+    client = gspread.authorize(creds)
+    sheet = client.open_by_key(sheet_id).worksheet(status_page)
+    headers = sheet.row_values(2)
+    new_headers = []
+    for id_entry in all_ids:
+        if id_entry not in headers:
+            new_headers.append(id_entry)
+            new_headers.append(f"{id_entry}_comments")
+    updated_headers = headers + new_headers
+    sheet.delete_rows(2)  # Remove old header
+    sheet.insert_row(updated_headers, 2)  # Add new header
+
 
 if __name__ == "__main__":
     args = parse_args()
@@ -282,4 +353,6 @@ if __name__ == "__main__":
     # setup/update users
     status_page = "status"
     update_user_creds(gcreds, sheet_id, status_page)
+    update_status_ids(gcreds, lms_json_file, sheet_id, status_page)
+    time.sleep(60)
     update_status_json_from_gsheet(gcreds, status_json_file, sheet_id, status_page)

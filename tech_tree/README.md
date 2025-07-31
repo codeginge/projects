@@ -27,7 +27,8 @@
 	1b -Done- creates resources from template
 	1c -Done- removes resources (if at least doc_link and id are deleted on google sheet)
 	2a -Done- go through list of people on status page and create student and teacher login creds
-	3a -InProgress- per student keep ids up to date with resource ids for techs, projects and contracts
+	3a -Done- keep ids up to date with ids for techs, projects and contracts
+	3b -Done- per student put gsheet data into json dict structure and save to status file
 	4a -NotStarted- run through user input queue and update comments from student inputs
 	4b -NotStarted- run through user input queue and update completion from teacher inputs
 
@@ -55,27 +56,20 @@
 		"type":"",
 		"username":"",
 		"password":"",
-		"overall": {
-			"tech_count": 0,
-			"tech_mastery": 0,
-			"tech_completion":0,
-			"project_count": 0,
-			"project_mastery": 0,
-			"project_completion":0,
-			"contract_count": 0,
-			"contract_mastery": 0,
-			"contract_completion":0
-		},
-		"items": [
+		"tech_count": 0,
+		"tech_mastery": 0,
+		"tech_completion":0,
+		"project_count": 0,
+		"project_mastery": 0,
+		"project_completion":0,
+		"contract_count": 0,
+		"contract_mastery": 0,
+		"contract_completion":0,
+		"raw_data": [
 			{			
 				"id":"",
-				"completion":0,
-				"comments":[
-					{
-						"date":"",
-						"comment":""
-					}
-				]
+				"points": 0,
+				"comments": ""
 			}
 		]	
 	}
