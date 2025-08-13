@@ -15,12 +15,12 @@
 ## processes
 1 - web service (user interaction handling)
 	1a -Done- log user in with username and password
-	2a -NotStarted- show student users their tech tree and provide links to docs for learning
-	2b -NotStarted- allow students to comment on items in the tech tree
-	2c -NotStarted- put student comments into user_input_json_file 
-	3a -NotStarted- allow teacher to see class wide tech tree
-	3b -NotStarted- allow teachers to see student specific tech tree
-	3c -NotStarted- allow teachers to put in completion for items in student's tech tree
+	2a -Done- show student users their tech tree and provide links to docs for learning
+	2b -Done- allow students to comment on items in the tech tree
+	2c -Done- put student comments into user_input_json_file 
+	3a -Done- allow teacher to see class wide tech tree
+	3b -Done- allow teachers to see student specific tech tree
+	3c -Done- allow teachers to put in completion for items in student's tech tree
 
 2 - data handler (avoid data collisions)
 	1a -Done- keeps information in google sheet, and json data set up to date
@@ -30,7 +30,7 @@
 	3a -Done- keep ids up to date with ids for techs, projects and contracts
 	3b -Done- per student put gsheet data into json dict structure and save to status file
 	4a -NotStarted- run through user input queue and update comments from student inputs
-	4b -NotStarted- run through user input queue and update completion from teacher inputs
+	4b -NotStarted- run through user input queue and update points from teacher inputs
 
 
 
@@ -74,8 +74,21 @@
 		]	
 	}
 ]
-
-
+### updates.json
+[
+	{
+	    "username": "",
+	    "item_id": "",
+	    "timestamp": "",
+	    "points": 0
+	},
+	{
+	    "username": "",
+	    "item_id": "",
+	    "timestamp": "",
+	    "comment": ""
+	}
+]
 
 
 
