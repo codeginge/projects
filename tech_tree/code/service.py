@@ -9,11 +9,17 @@ from flask import Flask, session
 from dash.dependencies import ALL, MATCH
 
 # ---------- Load Data ----------
-with open("/Users/michael/Desktop/status_data.json") as f:
-    user_data = json.load(f)
+def load_data_from_files():
+    """Loads all data from JSON files and returns it."""
+    with open("/Users/michael/Desktop/status_data.json") as f:
+        user_data = json.load(f)
+    
+    with open("/Users/michael/Desktop/ims_data.json") as f:
+        lms_data = json.load(f)
+    
+    return user_data, lms_data
 
-with open("/Users/michael/Desktop/ims_data.json") as f:
-    lms_data = json.load(f)
+user_data, lms_data = load_data_from_files()
 
 UPDATE_LOG_PATH = "/Users/michael/Desktop/updates_log.json"
 
@@ -187,16 +193,19 @@ def dashboard_page(user):
             id="user-data",
             data={"logged_in": user, "viewing": user}
         ),
+        # Add the Interval component here
+        dcc.Interval(
+            id="interval-component",
+            interval=5 * 60 * 1000,  # 5 minutes in milliseconds
+            n_intervals=0,
+        ),
         html.H2(f"Welcome, {user['first'].title()} {user['last'].title()}!"),
         html.P(f"User Type: {user['type']}"),
         html.Button("Log out", id="logout-btn"),
         html.Hr(),
 
         html.H4("Data Browser"),
-        # FIX: The teacher_dropdown is already a list, so it's correct.
-        # The issue lies in the callback that updates it, or a separate issue.
-        # This part of the code is fine, but it was a potential point of failure.
-        *teacher_dropdown,  # Unpack the list of components here
+        *teacher_dropdown,
         dcc.Tabs(id="data-tabs", value=tabs[0].value if tabs else 'raw', children=tabs),
         html.Div(id="tab-content", style={"marginTop": "20px"}),
 
@@ -272,13 +281,38 @@ def logout(n_clicks):
     session.pop("user", None)
     return "/"
 
+# New callback to update data at a fixed interval
+@app.callback(
+    Output("user-data", "data", allow_duplicate=True),
+    Input("interval-component", "n_intervals"),
+    State("user-data", "data"),
+    prevent_initial_call=True
+)
+def update_data_at_interval(n_intervals, stored_data):
+    """Reloads all data from the JSON files and updates the user-data store."""
+    print("Refreshing data from JSON files...")
+    
+    # Reload the entire dataset from the disk
+    reloaded_user_data, _ = load_data_from_files()
+    reloaded_users = {user["username"]: user for user in reloaded_user_data}
+    
+    # Keep the logged-in user, but update the viewing user with the latest data from the file
+    logged_in_user = stored_data["logged_in"]
+    viewing_username = stored_data["viewing"]["username"]
+    
+    updated_viewing_user = reloaded_users.get(viewing_username, stored_data["viewing"])
+    
+    return {"logged_in": logged_in_user, "viewing": updated_viewing_user}
+
+
 @app.callback(
     Output("tab-content", "children"),
     Input("data-tabs", "value"),
+    Input("user-data", "data"), # Now this callback is triggered by the dcc.Interval
     State("user-data", "data"),
     prevent_initial_call=False
 )
-def render_tab(tab_value, stored):
+def render_tab(tab_value, trigger_data, stored):
     if not stored or not stored.get("viewing"):
         return html.Div("No user logged in.")
 

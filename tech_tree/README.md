@@ -29,8 +29,9 @@
 	2a -Done- go through list of people on status page and create student and teacher login creds
 	3a -Done- keep ids up to date with ids for techs, projects and contracts
 	3b -Done- per student put gsheet data into json dict structure and save to status file
-	4a -NotStarted- run through user input queue and update comments from student inputs
-	4b -NotStarted- run through user input queue and update points from teacher inputs
+	4a -Done- run through user input queue and update comments from student inputs
+	4b -Done- run through user input queue and update points from teacher inputs
+	5a -InProgress- update status gsheet
 
 
 

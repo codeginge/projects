@@ -20,6 +20,7 @@ def parse_args():
     parser.add_argument("--sheet_id", required=True, help="Name of google sheet to use.")
     parser.add_argument("--lms_json_file", required=True, help="Location of lms json file.")
     parser.add_argument("--status_json_file", required=True, help="Location of status json file.")
+    parser.add_argument("--user_input_file", required=True, help="Location of user input json file.")
     
     return parser.parse_args()
 
@@ -292,7 +293,6 @@ def update_status_json_from_gsheet(json_key_path, json_file, sheet_id, status_pa
     client = gspread.authorize(creds)
     status_data = client.open_by_key(sheet_id).worksheet(status_page).get_all_values()
 
-    # TODO Start here!
     new_data = []
     headers = status_data[1]
     for row in status_data[2:]:
@@ -305,6 +305,98 @@ def update_status_json_from_gsheet(json_key_path, json_file, sheet_id, status_pa
             json.dump(new_data, file, indent=4)
     except Exception as e:
         print(f"Error writing JSON file: {e}")
+
+
+def update_status_json_from_user_input_json(user_input_file, status_json_file):
+    try:
+        # Load the existing user status data
+        with open(status_json_file, "r") as file:
+            old_status_data = json.load(file)
+        print("Status file loaded successfully.")
+    except (FileNotFoundError, json.JSONDecodeError) as e:
+        print(f"Error loading status file: {e}")
+        return False
+
+    try:
+        # Load the updates log
+        with open(user_input_file, "r") as file:
+            user_input = json.load(file)
+        print("Updates log loaded successfully.")
+    except (FileNotFoundError, json.JSONDecodeError) as e:
+        print(f"Error loading updates log: {e}")
+        return False
+    
+    users_dict = {user['username']: user for user in old_status_data}
+    processed_updates_indices = set()
+    
+    changes_made = False
+    for i, update in enumerate(user_input):
+        username = update.get("username")
+        item_id = update.get("item_id")
+        
+        if username in users_dict:
+            user = users_dict[username]
+            for item in user.get("raw_data", []):
+                if item.get("id") == item_id:
+                    update_applied = False
+                    
+                    # Check for "points" or "point" key to update points
+                    if "points" in update:
+                        item["points"] = update["points"]
+                        update_applied = True
+                        changes_made = True
+                        print(f"  - Updated points for {username} on {item_id}")
+                    elif "point" in update:
+                        item["points"] = update["point"]
+                        update_applied = True
+                        changes_made = True
+                        print(f"  - Updated points for {username} on {item_id}")
+                    
+                    # Check for "comment" or "comments" key to update comments
+                    if "comment" in update:
+                        item["comments"] = update["comment"]
+                        update_applied = True
+                        changes_made = True
+                        print(f"  - Updated comment for {username} on {item_id}")
+                    elif "comments" in update:
+                        item["comments"] = update["comments"]
+                        update_applied = True
+                        changes_made = True
+                        print(f"  - Updated comment for {username} on {item_id}")
+                    
+                    if update_applied:
+                        processed_updates_indices.add(i)
+                    
+                    # Exit the inner loop once the item is found and updated
+                    break
+    
+    # Save the updated data back to the user status JSON file
+    try:
+        if changes_made:
+            with open(status_json_file, "w") as file:
+                json.dump(old_status_data, file, indent=4)
+            print(f"Successfully updated '{status_json_file}' with new data.")
+        else:
+            print("No changes were applied to the status file based on the updates log.")
+    except IOError as e:
+        print(f"Error: Could not write to file '{status_json_file}'. Check file permissions. {e}")
+        return False
+
+    # Remove the processed updates and save the log file
+    remaining_updates = [update for i, update in enumerate(user_input) if i not in processed_updates_indices]
+
+    try:
+        with open(user_input_file, "w") as file:
+            json.dump(remaining_updates, file, indent=4)
+        print(f"Successfully removed {len(processed_updates_indices)} processed updates from '{user_input_file}'.")
+        return True
+    except IOError as e:
+        print(f"Error: Could not rewrite the updates log file '{user_input_file}'. {e}")
+        return False
+
+
+def update_status_gsheet_from_status_json(gcreds, status_json_file, sheet_id, status_page):
+    return True
 
 
 def update_status_ids(json_key_path, lms_json_file, sheet_id, status_page):
@@ -339,6 +431,7 @@ if __name__ == "__main__":
     sheet_id = args.sheet_id
     lms_json_file = args.lms_json_file
     status_json_file = args.status_json_file
+    user_input_file = args.user_input_file
 
     lms_pages = ["techs", "projects", "contracts"]
     lms_headers = ["name", "type", "sub_type", "core", "id", "dependency", "doc_link"]
@@ -346,14 +439,17 @@ if __name__ == "__main__":
     # Pull data from gsheet
     gsheet_data = pull_gsheet_data(gcreds, sheet_id, lms_pages)
     # update local json file and create ids and doc_links that are missing
-    update_json_from_gsheet(gcreds, lms_json_file, gsheet_data, lms_pages, lms_headers)
+    #update_json_from_gsheet(gcreds, lms_json_file, gsheet_data, lms_pages, lms_headers)
     # update google sheet with new ids and doc_links
-    update_gsheet_from_json(gcreds, lms_json_file, sheet_id, lms_pages, lms_headers)
-    time.sleep(60)
+    #update_gsheet_from_json(gcreds, lms_json_file, sheet_id, lms_pages, lms_headers)
+    #time.sleep(60)
 
     # setup/update users
     status_page = "status"
-    update_user_creds(gcreds, sheet_id, status_page)
-    update_status_ids(gcreds, lms_json_file, sheet_id, status_page)
-    time.sleep(60)
-    update_status_json_from_gsheet(gcreds, status_json_file, sheet_id, status_page)
+    #update_user_creds(gcreds, sheet_id, status_page)
+    #update_status_ids(gcreds, lms_json_file, sheet_id, status_page)
+    #time.sleep(60)
+    #update_status_json_from_gsheet(gcreds, status_json_file, sheet_id, status_page)
+    update_status_json_from_user_input_json(user_input_file, status_json_file)
+    #time.sleep(60)
+    #update_status_gsheet_from_status_json(gcreds, status_json_file, sheet_id, status_page)
