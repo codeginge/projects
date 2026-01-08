@@ -3,8 +3,8 @@
 
 # Find the number of regions for all circles from min to max
 time_delay=1
-min=2000
-max=3000
+min=1
+max=30
 r=[]
 n_circles=list(range(min,max))
 for c in n_circles:
