@@ -1,0 +1,38 @@
+Circuit
+1. Series
+  a. voltage divider
+    1. voltage regulation
+    2. sensor reading
+  b. battery voltage increase
+2. Parallel
+  a. battery current increase
+3. Resistor Capacitor (RC)
+4. Resistor Inductor Capacitor (RLC)
+
+Coding
+1. Conditionals
+  a. less than
+  b. greater than
+  c. equal to
+2. Loops
+  a. for
+  b. while
+  c. break
+  d. continue
+3. Interupts
+4. Constructs
+  a. AND
+  b. OR
+  c. NAND
+  d. NOR
+5. Variable Types
+  a. boolean
+  b. integer
+  c. string
+6. Data Structures
+  a. lists
+  b. arrays
+  c. tables
+  d. class
+  e. library
+7. functions

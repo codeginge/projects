@@ -1,0 +1,70 @@
+Circuit Components
+1. Resistors
+  a. fixed
+  b. variable
+    1. potentiometer
+    2. thermistor
+    3. LDR (light dependent resistor)
+2. Batteries
+  a. single use
+    1. AA batteries
+    2. watch batteries
+    3. 9V batteries
+  b. rechangeable
+    1. LiPo
+    2. NiCad
+3. Capacitors
+  a. barrel
+  b. coin
+4. Inductors
+  a. fixed
+  b. variable
+5. Wires
+  a. breadboard jumper cables
+    1. male-male
+    2. male-female
+    3. female-female
+  b. alligator clip
+  c. banana cables
+6. Fuses
+7. Switches
+  a. normally open
+  b. normally closed
+8. Relays
+9. Diode
+  a. light emitting diodes
+  b. normal diode
+10. Oscillators
+
+Sensors
+1. light
+2. distance
+3. sound
+4. touch
+5. mangetic field
+6. temperature
+
+Actuators
+1. rotation
+  a. motor
+  b. servo
+  c. stepper motor
+2. linear 
+  a. solenoids
+
+Microcontrollers
+1. Arduino
+  a. uno
+  b. nano
+2. Others
+  a. ESP32
+  b. teensy
+
+Single Board Computers
+1. Raspberry Pi
+2. Odroid
+
+Circuit Tools
+1. power supply
+2. voltometer
+3. soldering iron
