@@ -8,6 +8,10 @@ Circuit
   a. battery current increase
 3. Resistor Capacitor (RC)
 4. Resistor Inductor Capacitor (RLC)
+5. Relays
+  a. normally open
+  b. normally closed
+  c. solid state relays (SSRs)
 
 Coding
 1. Conditionals
