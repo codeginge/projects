@@ -40,3 +40,11 @@ Coding
   d. class
   e. library
 7. functions
+
+Communication Protocols 
+1. wired
+  a. uart
+  b. I2C
+2. wireless
+  a. wifi
+  b. bluetooth
