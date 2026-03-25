@@ -1,0 +1,29 @@
+9 gram servo information
+last updated: 3/25/26
+by: mroberts
+
+OVERVIEW
+Servos are actuators that can pivot a full 180 degrees. The normal convention for the positions of a servo are center, 90 degrees, and negative 90 degrees.
+
+SERVO HORNS
+Servo horns are the plastic white arms that are attached to your servo. These can be snapped into place and then secured using the screws that come with the servo. Each horn will have multiple holes in it. The holes that are further away from the center of rotation have a larger "THROW" than the holes closer to the center of rotation. This is because when rotated from negative 90 degrees to positive 90 degrees the servo will traverse half of the circumference of a circle with a radius measured from the center of rotation to the hole.
+
+POWER LIMITATION of a 9 gram servo
+9 grams relates to weight of the servo, nt the power limitations. When determining the strength of a servo it is measured in tourque. The torque that can be applied by a 9 gram servo is between 1.2 kg/cm and 2.5 kg/cm depending on its opperative voltage (4.8 volts to 6 volts).  
+
+MOUNTING servos to your project
+There are 2 "fins" that come off of the servo with M2 mounting screws. When designing your system, look up a diagram for your specific servo for hole placement.
+
+CENTERING w/Remote Control 
+Follow these steps to center a servo with a RC setup. Plug the servo into the receiver. Make sure the receiver is on. Make sure the transmitter is connected to the receiver and that the channel the servo is connected to is not trimmed left or right. In this situation, the servo will automatically go to its center position.
+
+CONTROL SIGNAL
+The servo is controlled by PWM (Pulse Width Modulation). The time based pulse of the high level part of the pwm will control the angle. 
+0.5ms = -90 degrees 
+1.0ms = -45 degrees
+1.5ms = 0 degrees (center)
+2.0ms = 45 degrees
+2.5ms = 90 degrees
+
+CODING w/arduino
+To code with arduino connect the power and ground of servo to the appropiate pins and chose a pin with the "~" notation. This means that the pin is a pin capable of PWM output. To control the pin either you can use pre existing libraries or you can code it on your own.

@@ -1,0 +1,6 @@
+3 - Check-In / Instructions (Read Quietly)
+2 - Questions and Answers
+10 - Design and First Test
+7 - Redesign and Second Test
+3 - Clean Up
+5 - Transistion
