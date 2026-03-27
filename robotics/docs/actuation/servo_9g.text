@@ -17,6 +17,15 @@ There are 2 "fins" that come off of the servo with M2 mounting screws. When desi
 CENTERING w/Remote Control 
 Follow these steps to center a servo with a RC setup. Plug the servo into the receiver. Make sure the receiver is on. Make sure the transmitter is connected to the receiver and that the channel the servo is connected to is not trimmed left or right. In this situation, the servo will automatically go to its center position.
 
+WIRING DIAGRAM
+There are three colors of wires that come from these servos. The colors relate to the following:
+brown = GND (ground)
+red = power (typically 4.8volts - 6volts) 
+yellow = signal
+
+POWER REQUIREMENTS
+To power these the power and ground wires must but supplied with between 4.8 and 6 volts of power.
+
 CONTROL SIGNAL
 The servo is controlled by PWM (Pulse Width Modulation). The time based pulse of the high level part of the pwm will control the angle. 
 0.5ms = -90 degrees 
@@ -26,4 +35,30 @@ The servo is controlled by PWM (Pulse Width Modulation). The time based pulse of
 2.5ms = 90 degrees
 
 CODING w/arduino
-To code with arduino connect the power and ground of servo to the appropiate pins and chose a pin with the "~" notation. This means that the pin is a pin capable of PWM output. To control the pin either you can use pre existing libraries or you can code it on your own.
+To code with arduino connect the power and ground of servo to the appropiate pins and chose a pin with the "~" notation. This means that the pin is a pin capable of PWM output. To control the pin either you can use pre existing libraries or you can code it on your own. Although it is possible that you can set the degree manually using PWM, the best method is to use the Servo library. Example code for this can be found below.
+
+EXAMPLE ARDUINO CODE
+------------
+#include <Servo.h>
+int sm_pin = A0; // servo motor pin
+int sm_min = 544; // pwm realteing to 0 degrees
+int sm_max = 2400; // pwm relating to 180 degrees
+Servo servo_1; // define servo object
+
+void setup() {
+  // put your setup code here, to run once:
+  Serial.begin(9000);
+  servo_1.attach(sm_pin, sm_min, sm_max);
+}
+
+void loop() {
+  // put your main code here, to run repeatedly:
+  servo_1.write(90);
+  delay(5000);
+  servo_1.write(0);
+  delay(1000);
+  servo_1.write(180);
+  delay(1000);
+}
+------------
+
