@@ -46,13 +46,10 @@ int sm_max = 2400; // pwm relating to 180 degrees
 Servo servo_1; // define servo object
 
 void setup() {
-  // put your setup code here, to run once:
-  Serial.begin(9000);
   servo_1.attach(sm_pin, sm_min, sm_max);
 }
 
 void loop() {
-  // put your main code here, to run repeatedly:
   servo_1.write(90);
   delay(5000);
   servo_1.write(0);
