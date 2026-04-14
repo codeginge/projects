@@ -3,3 +3,6 @@ apt update && apt upgrade -y
 apt install git -y
 apt install vim -y
 apt install arduino
+./install-arduino-cli.sh
+arduino-cli lib update-index
+arduino-cli lib install "Servo"

@@ -2,5 +2,12 @@ The environment setup for coding is very important and is necessary for us to un
 
 ARDUINO
 
+RASPBERRY PI
+All commands for this section can be found in "/code/setup.sh". This is a schell script that when run will setup your raspberry pi with the environment explained below. 
 
+1. Update and Upgrade
+
+2. Arduino IDE
+
+3. Vim install fix
 
