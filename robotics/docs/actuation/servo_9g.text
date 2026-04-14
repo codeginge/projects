@@ -41,7 +41,7 @@ EXAMPLE ARDUINO CODE
 ------------
 #include <Servo.h>
 int sm_pin = A0; // servo motor pin
-int sm_min = 544; // pwm realteing to 0 degrees
+int sm_min = 544; // pwm relateing to 0 degrees
 int sm_max = 2400; // pwm relating to 180 degrees
 Servo servo_1; // define servo object
 

@@ -1,0 +1,6 @@
+The environment setup for coding is very important and is necessary for us to understand as we being out coding journey. When working with any code there are libraries, dependencies and building blocks that if setup in the wrong order can create hard to diagnose error codes. This documentation is a collection of steps for setting up our environments.
+
+ARDUINO
+
+
+
