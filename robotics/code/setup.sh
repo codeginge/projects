@@ -5,4 +5,5 @@ apt install vim -y
 apt install arduino
 ./install-arduino-cli.sh
 arduino-cli lib update-index
-arduino-cli lib install "Servo"
+arduino-cli lib install "Servo"@1.2.2
+
