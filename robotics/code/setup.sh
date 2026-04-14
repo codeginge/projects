@@ -2,6 +2,7 @@
 apt update && apt upgrade -y
 apt install git -y
 apt install vim -y
+apt install tree
 apt install arduino
 ./install-arduino-cli.sh
 arduino-cli lib update-index
