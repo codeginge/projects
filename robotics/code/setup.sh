@@ -7,4 +7,6 @@ apt install arduino
 ./install-arduino-cli.sh
 arduino-cli lib update-index
 arduino-cli lib install "Servo"@1.2.2
-
+apt install -y lazygit
+echo "alias lg='lazygit'" >> ~/.bashrc
+source ~/.bashrc
