@@ -76,8 +76,8 @@ def build_scatter_plot(data, filename):
     print(f"Plot saved to file {filename}.png")
 
 
-data=(build_problem_space(0, 181, 1, 3, 3))
-filename="/Users/michael/Desktop/projects/robotics/code/2_arm_problem_space"
+data=(build_problem_space(0, 181, 1, 87.23, 87.23))
+filename="/Users/michael/Desktop/projects/robotics/code/2_arm_drawing_robot/2_arm_problem_space"
 build_scatter_plot(data,filename)
 save_to_csv(data,filename)
 
