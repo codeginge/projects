@@ -4,6 +4,11 @@ By: Michael Roberts
 Last Updated: 4/20/2026
 
 This code is designed for a two arm robotic drawing robot. This code creates a reference table for use in reverse kinematics. The code will loop through all avalible angle positions for both servos and output the (x,y) coordinate they corrispond to.
+
+Build python env using the following:
+python3 -m venv myenv 
+source myenv/bin/activate
+pip install matplotlib
 """
 
 import math
@@ -38,7 +43,7 @@ def build_problem_space(servo_angle_min, servo_angle_max, step, link_1_length, l
 
 
 def save_to_csv(data, filename):
-    with open(filename,mode='w',newline='') as file:
+    with open(f"{filename}.csv",mode='w',newline='') as file:
         writer = csv.writer(file)
         writer.writerow(['theta_1','theta_2','x_value','y_value'])
         angle_data = data[0]
@@ -47,12 +52,18 @@ def save_to_csv(data, filename):
             t1,t2 = angle_data[i]
             x,y = coordinate_data[i]
             writer.writerow([t1,t2,x,y])
-    print(f"File written to {filename}")
+    print(f"File written to {filename}.csv")
 
 
-def build_problem_space_plot(data, filename):
-    theta_1_angles, theta_2_angles = data[0]
-    x_coordinates, y_coordinates = data[1]
+def build_scatter_plot(data, filename):
+    theta_list = data[0]
+    xy_list = data[1]
+    theta_1_angles, theta_2_angles, x_coordinates, y_coordinates = [], [], [], []
+    for i in range(len(theta_list)):
+        theta_1_angles.append(theta_list[i][0])
+        theta_2_angles.append(theta_list[i][1])
+        x_coordinates.append(xy_list[i][0]) 
+        y_coordinates.append(xy_list[i][1])
     plt.figure(figsize=(8,8))
     plt.scatter(x_coordinates, y_coordinates, s=1, c='blue', alpha=0.5) # s, c, and alpha relate to the dot size, color and transparency
     plt.title("2-Arm Linkage Problem Space")
@@ -60,13 +71,13 @@ def build_problem_space_plot(data, filename):
     plt.ylabel("Y Position (MM)")
     plt.grid(True)
     plt.axis('equal')
-    plt.show()
-    plt.savefig(filename)
-    print(f"Plot saved to file {filename}")
+    plt.autoscale(enable=True, axis='both', tight=None)
+    plt.savefig(f"{filename}.png")
+    print(f"Plot saved to file {filename}.png")
 
 
 data=(build_problem_space(0, 181, 1, 3, 3))
-filename="/Users/michael/Desktop/projects/robotics/code/2_arm_problem_space.csv"
-build_problem_space_plot(data,filename)
+filename="/Users/michael/Desktop/projects/robotics/code/2_arm_problem_space"
+build_scatter_plot(data,filename)
 save_to_csv(data,filename)
 
