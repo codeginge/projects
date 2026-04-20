@@ -14,6 +14,8 @@ pip install matplotlib
 import math
 import csv
 import matplotlib.pyplot as plt
+import argparse
+import numpy as np
 
 
 def coordinate_calculation(theta_1, link_1, theta_2, link_2):
@@ -35,8 +37,8 @@ def build_problem_space(servo_angle_min, servo_angle_max, step, link_1_length, l
     """
     input_domain = []
     output_range = []
-    for i in range(servo_angle_min, servo_angle_max, step): # loop through all theta_1 possibilities
-        for j in range(servo_angle_min, servo_angle_max, step): # go through all theta_2 possibilities
+    for i in np.arange(servo_angle_min, servo_angle_max, step): # loop through all theta_1 possibilities
+        for j in np.arange(servo_angle_min, servo_angle_max, step): # go through all theta_2 possibilities
             input_domain.append((i,j))
             output_range.append((coordinate_calculation(i, link_1_length, j, link_2_length)))
     return (input_domain, output_range)
@@ -67,8 +69,8 @@ def build_scatter_plot(data, filename):
     plt.figure(figsize=(8,8))
     plt.scatter(x_coordinates, y_coordinates, s=1, c='blue', alpha=0.5) # s, c, and alpha relate to the dot size, color and transparency
     plt.title("2-Arm Linkage Problem Space")
-    plt.xlabel("X Position (MM)")
-    plt.ylabel("Y Position (MM)")
+    plt.xlabel("X Position (IN)")
+    plt.ylabel("Y Position (IN)")
     plt.grid(True)
     plt.axis('equal')
     plt.autoscale(enable=True, axis='both', tight=None)
@@ -76,8 +78,26 @@ def build_scatter_plot(data, filename):
     print(f"Plot saved to file {filename}.png")
 
 
-data=(build_problem_space(0, 181, 1, 87.23, 87.23))
-filename="/Users/michael/Desktop/projects/robotics/code/2_arm_drawing_robot/2_arm_problem_space"
-build_scatter_plot(data,filename)
-save_to_csv(data,filename)
+#data=(build_problem_space(0, 181, 1, 3.25, 3.25))
+#filename="/Users/michael/Desktop/projects/robotics/code/2_arm_drawing_robot/2_arm_problem_space"
+#build_scatter_plot(data,filename)
+#save_to_csv(data,filename)
+
+
+def argument_parser():
+    parser = argparse.ArgumentParser(description="")
+    parser.add_argument("--min", type=float, required=True, help="minimum servo angle")
+    parser.add_argument("--max", type=float, required=True, help="maximum servo angle")
+    parser.add_argument("--step", type=float, required=True, help="servo angle step size")
+    parser.add_argument("--link_1", type=float, required=True, help="link 1 length (inches)")
+    parser.add_argument("--link_2", type=float, required=True, help="link 2 length (inches)")
+    parser.add_argument("--file", type=str, required=True, help="file location (/DIR/filename) for output .csv and .png files")
+    return parser.parse_args()
+
+if __name__ == "__main__":
+    args = argument_parser()
+    data = build_problem_space(args.min, args.max, args.step, args.link_1, args.link_2)
+    build_scatter_plot(data,args.file)
+    save_to_csv(data,args.file)
+
 
