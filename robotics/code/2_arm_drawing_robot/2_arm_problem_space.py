@@ -9,6 +9,9 @@ Build python env using the following:
 python3 -m venv myenv 
 source myenv/bin/activate
 pip install matplotlib
+
+Run Example:
+python3 ./2_arm_problem_space.py --max 120 --min 0 --step 5 --link_1 3.25 --link_2 7 --file "/Users/michael/Desktop/projects/robotics/code/2_arm_drawing_robot/2_arm_problem_space"
 """
 
 import math
@@ -23,8 +26,8 @@ def coordinate_calculation(theta_1, link_1, theta_2, link_2):
     theta_2_rads = math.radians(theta_2) 
     x_link_1 = link_1*math.cos(theta_1_rads)
     y_link_1 = link_1*math.sin(theta_1_rads)
-    x_link_2 = link_2*math.cos(theta_2_rads)
-    y_link_2 = link_2*math.sin(theta_2_rads)
+    x_link_2 = link_2*math.cos(theta_1_rads + theta_2_rads)
+    y_link_2 = link_2*math.sin(theta_1_rads + theta_2_rads)
     x_sum = x_link_1 + x_link_2
     y_sum = y_link_1 + y_link_2
     coordinates = (x_sum, y_sum)
@@ -76,12 +79,6 @@ def build_scatter_plot(data, filename):
     plt.autoscale(enable=True, axis='both', tight=None)
     plt.savefig(f"{filename}.png")
     print(f"Plot saved to file {filename}.png")
-
-
-#data=(build_problem_space(0, 181, 1, 3.25, 3.25))
-#filename="/Users/michael/Desktop/projects/robotics/code/2_arm_drawing_robot/2_arm_problem_space"
-#build_scatter_plot(data,filename)
-#save_to_csv(data,filename)
 
 
 def argument_parser():
