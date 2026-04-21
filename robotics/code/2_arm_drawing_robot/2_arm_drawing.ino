@@ -55,7 +55,7 @@ AnglePair reverse_kinematics(float x, float y, float l1, float l2) {
   // input your desired coordinates and linkage lengths and the 
   // function will return the angles for the linkages 
   AnglePair resultant_angles;
-  resultant_angles.theta_2 = acos((x*x+y*y-l1*l1-l2*l2)/(2*l1*l2))*180/PI;
+  resultant_angles.theta_2 = acos((x*x+y*y-l1*l1-l2*l2)/(-2*l1*l2))*180/PI;
   resultant_angles.theta_1 = (atan(y/x)+atan((l2*sin(resultant_angles.theta_1))/(l1+l2*cos(resultant_angles.theta_1))))*180/PI;
   return(resultant_angles);
 }

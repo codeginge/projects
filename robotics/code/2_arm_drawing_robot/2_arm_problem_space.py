@@ -26,8 +26,8 @@ def coordinate_calculation(theta_1, link_1, theta_2, link_2):
     theta_2_rads = math.radians(theta_2) 
     x_link_1 = link_1*math.cos(theta_1_rads)
     y_link_1 = link_1*math.sin(theta_1_rads)
-    x_link_2 = link_2*math.cos(theta_1_rads + theta_2_rads)
-    y_link_2 = link_2*math.sin(theta_1_rads + theta_2_rads)
+    x_link_2 = link_2*math.cos(theta_1_rads - theta_2_rads)
+    y_link_2 = link_2*math.sin(theta_1_rads - theta_2_rads)
     x_sum = x_link_1 + x_link_2
     y_sum = y_link_1 + y_link_2
     coordinates = (x_sum, y_sum)
@@ -60,7 +60,7 @@ def save_to_csv(data, filename):
     print(f"File written to {filename}.csv")
 
 
-def build_scatter_plot(data, filename):
+def build_scatter_plot(data, filename, link_1, link_2):
     theta_list = data[0]
     xy_list = data[1]
     theta_1_angles, theta_2_angles, x_coordinates, y_coordinates = [], [], [], []
@@ -71,6 +71,8 @@ def build_scatter_plot(data, filename):
         y_coordinates.append(xy_list[i][1])
     plt.figure(figsize=(8,8))
     plt.scatter(x_coordinates, y_coordinates, s=1, c='blue', alpha=0.5) # s, c, and alpha relate to the dot size, color and transparency
+    plt.plot([0,link_1],[0,0],color='black',linestyle='--',linewidth=2)
+    plt.plot([link_1,(link_1 + link_2)],[0,0],color='red',linestyle='--',linewidth=2)
     plt.title("2-Arm Linkage Problem Space")
     plt.xlabel("X Position (IN)")
     plt.ylabel("Y Position (IN)")
@@ -94,7 +96,7 @@ def argument_parser():
 if __name__ == "__main__":
     args = argument_parser()
     data = build_problem_space(args.min, args.max, args.step, args.link_1, args.link_2)
-    build_scatter_plot(data,args.file)
+    build_scatter_plot(data, args.file, args.link_1, args.link_2)
     save_to_csv(data,args.file)
 
 
