@@ -21,7 +21,7 @@ import argparse
 import numpy as np
 
 
-def coordinate_calculation(theta_1, link_1, theta_2, link_2):
+def forward_kinematics(theta_1, link_1, theta_2, link_2):
     theta_1_rads = math.radians(theta_1)
     theta_2_rads = math.radians(theta_2) 
     x_link_1 = link_1*math.cos(theta_1_rads)
@@ -34,6 +34,13 @@ def coordinate_calculation(theta_1, link_1, theta_2, link_2):
     return coordinates
 
 
+def inverse_kinematics(x, y, link_1, link_2):
+    theta_2 = (x^2+y^2-link_1^2-link_1^2)/(-2*link_1*link_2)
+    theta_1 = math.atan(y/y) - math.atan((link_1+link_2*math.cos(theta_2))/(math.sin(link_2)))
+    angles = (theta_1, theta_2)
+    return angles 
+
+
 def build_problem_space(servo_angle_min, servo_angle_max, step, link_1_length, link_2_length): 
     """
     this function will build the domain and range of the problem space based off of servo range and link length
@@ -43,7 +50,7 @@ def build_problem_space(servo_angle_min, servo_angle_max, step, link_1_length, l
     for i in np.arange(servo_angle_min, servo_angle_max, step): # loop through all theta_1 possibilities
         for j in np.arange(servo_angle_min, servo_angle_max, step): # go through all theta_2 possibilities
             input_domain.append((i,j))
-            output_range.append((coordinate_calculation(i, link_1_length, j, link_2_length)))
+            output_range.append((forward_kinematics(i, link_1_length, j, link_2_length)))
     return (input_domain, output_range)
 
 
@@ -92,6 +99,7 @@ def argument_parser():
     parser.add_argument("--link_2", type=float, required=True, help="link 2 length (inches)")
     parser.add_argument("--file", type=str, required=True, help="file location (/DIR/filename) for output .csv and .png files")
     return parser.parse_args()
+
 
 if __name__ == "__main__":
     args = argument_parser()
