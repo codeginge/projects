@@ -1,5 +1,5 @@
 #include <Servo.h>
-include <math.h>
+#include <math.h>
 struct AnglePair {
   int theta_1; // angle of first linkage
   int theta_2; // angle of second linkage
@@ -76,7 +76,7 @@ AnglePair inverse_kinematics(float x, float y, float l1, float l2) {
   // python: theta_1 = math.atan2(y, x) - math.atan2((link_2*math.sin(theta_2)),(link_1+link_2*math.cos(theta_2)))
   AnglePair resultant_angles;
   resultant_angles.theta_2 = acos( (x*x + y*y - l1*l1 - l2*l2) / (2*l1*l2) ) * 180 / PI;
-  resultant_angles.theta_1 = (atan2(y/x)+atan2((l2*sin(resultant_angles.theta_2))/(l1+l2*cos(resultant_angles.theta_2))))*180/PI;
+  resultant_angles.theta_1 = (atan2(y,x)+atan2((l2*sin(resultant_angles.theta_2)), (l1+l2*cos(resultant_angles.theta_2))))*180/PI;
   return(resultant_angles);
 }
 
