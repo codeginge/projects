@@ -48,11 +48,11 @@ void setup() {
 void loop() {
   if (program_type == 1) {
     if (Serial.available() > 0){
-      // read serial for x, y coordinates and pen-down variable "x_float, y_float, pen_down"
-      String input = Serial.readStringUntil('\n');
-      float x_value, y_value;
-      int pen_down;
-      sscanf(input.c_str(),"%f,%f,%d",&x_value,&y_value,&pen_down);
+      // read serial for x, y coordinates and pen-down variable "x_float, y_float, pen_down" line by line
+      float x_value = Serial.parseFloat();
+      float y_value = Serial.parseFloat();
+      int pen_down = Serial.parseInt();
+      Serial.find('\n');
       // set position to coordinate
       current_angles = inverse_kinematics(x_value, y_value, linkage_1, linkage_2);
       int current_theta_1 = floor(current_angles.theta_1 * 180 / PI);
