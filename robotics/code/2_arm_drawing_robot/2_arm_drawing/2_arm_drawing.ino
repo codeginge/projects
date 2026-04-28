@@ -1,8 +1,9 @@
 #include <Servo.h>
 #include <math.h>
+
 struct AnglePair {
-  int theta_1; // angle of first linkage
-  int theta_2; // angle of second linkage
+  float theta_1; // angle of first linkage
+  float theta_2; // angle of second linkage
 };
 
 int program_type = 0; // 0 = draw problem space, 1 = go to coordinates from serial
@@ -48,9 +49,10 @@ void loop() {
   if (program_type == 1) {
     if (Serial.available() > 0){
       // read serial for x, y coordinates and pen-down variable "x_float, y_float, pen_down"
-      float x_value = Serial.parseFloat();
-      float y_value = Serial.parseFloat();
-      float pen_down = Serial.parseInt();
+      String input = Serial.readStringUntil('\n');
+      float x_value, y_value;
+      int pen_down;
+      sscanf(input.c_str(),"%f,%f,%d",&x_value,&y_value,&pen_down);
       // set position to coordinate
       current_angles = inverse_kinematics(x_value, y_value, linkage_1, linkage_2);
       int current_theta_1 = floor(current_angles.theta_1 * 180 / PI);
@@ -75,11 +77,10 @@ void loop() {
 AnglePair inverse_kinematics(float x, float y, float l1, float l2) {
   // input your desired coordinates and linkage lengths and the 
   // function will return the angles for the linkages 
-  // pythonic: theta_2 = (math.acos((x*x+y*y-link_1*link_1-link_2*link_2)/(2*link_1*link_2)) - offset)*elbow_coefficient
-  // python: theta_1 = math.atan2(y, x) - math.atan2((link_2*math.sin(theta_2)),(link_1+link_2*math.cos(theta_2)))
   AnglePair resultant_angles;
-  resultant_angles.theta_2 = acos( (x*x + y*y - l1*l1 - l2*l2) / (2*l1*l2) );
-  resultant_angles.theta_1 = (atan2(y,x) - atan2((l2*sin(resultant_angles.theta_2)), (l1+l2*cos(resultant_angles.theta_2))))*180/PI;
+  float cos_t2 = ((x*x + y*y - l1*l1 - l2*l2) / (2*l1*l2)) 
+  resultant_angles.theta_2 = acos(cos_t2);
+  resultant_angles.theta_1 = (atan2(y,x) + atan2((l2*sin(resultant_angles.theta_2)), (l1+l2*cos(resultant_angles.theta_2))));
   return(resultant_angles);
 }
 
