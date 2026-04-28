@@ -22,12 +22,12 @@ import numpy as np
 import random
 
 
-def forward_kinematics(theta_1, link_1, theta_2, link_2, output_type):
+def forward_kinematics(theta_1, link_1, theta_2, link_2, output_type, offset):
     # angle input = radians
     x_link_1 = link_1*math.cos(theta_1)
     y_link_1 = link_1*math.sin(theta_1)
-    x_link_2 = link_2*math.cos(theta_1 + theta_2)
-    y_link_2 = link_2*math.sin(theta_1 + theta_2)
+    x_link_2 = link_2*math.cos(theta_1 + theta_2 + offset)
+    y_link_2 = link_2*math.sin(theta_1 + theta_2 + offset)
     coordinate_parts = (x_link_1, y_link_1, x_link_2, y_link_2)
     x_sum = x_link_1 + x_link_2
     y_sum = y_link_1 + y_link_2
@@ -38,14 +38,15 @@ def forward_kinematics(theta_1, link_1, theta_2, link_2, output_type):
         return coordinate_parts
 
 
-def inverse_kinematics(x, y, link_1, link_2, arm_type):
+def inverse_kinematics(x, y, link_1, link_2, arm_type, offset):
+    # angle input = radians
     if arm_type == "elbow_up":
         elbow_coefficient = -1
     if arm_type == "elbow_down":
         elbow_coefficient = 1
     if math.sqrt(x*x + y*y) < link_1 + link_2:
         # angle output is in radians
-        theta_2 = math.acos((x*x+y*y-link_1*link_1-link_2*link_2)/(2*link_1*link_2))*elbow_coefficient
+        theta_2 = (math.acos((x*x+y*y-link_1*link_1-link_2*link_2)/(2*link_1*link_2)) - offset)*elbow_coefficient
         theta_1 = math.atan2(y, x) - math.atan2((link_2*math.sin(theta_2)),(link_1+link_2*math.cos(theta_2)))
         angles = (theta_1, theta_2)
         return angles
@@ -53,12 +54,13 @@ def inverse_kinematics(x, y, link_1, link_2, arm_type):
         print(f"point ({x},{y}) is outside reachable area") 
 
 
-def build_problem_space(servo_angle_min, servo_angle_max, step, link_1_length, link_2_length, arm_type): 
+def build_problem_space(servo_angle_min, servo_angle_max, step, link_1_length, link_2_length, arm_type, offset_degrees): 
     """
     this function will build the domain and range of the problem space based off of servo range and link length
     input domain is degrees
     output range is coordinates
     """
+    offset = math.radians(offset_degrees)
     input_domain = []
     output_range = []
     for i in np.arange(servo_angle_min, servo_angle_max, step): # loop through all theta_1 possibilities
@@ -69,18 +71,18 @@ def build_problem_space(servo_angle_min, servo_angle_max, step, link_1_length, l
             else: 
                 j_rads = math.radians(j)
             input_domain.append((i,j))
-            FK = forward_kinematics(i_rads, link_1_length, j_rads, link_2_length, "sum") # theta_2 put it as a negative
+            FK = forward_kinematics(i_rads, link_1_length, j_rads, link_2_length, "sum", offset) # theta_2 put it as a negative
             output_range.append(FK)
     return (input_domain, output_range)
 
 
-def ik_fk_coordinate_error(x_desired, y_desired, link_1, link_2, step, arm_type):
-    IK = inverse_kinematics(x_desired, y_desired, link_1, link_2, arm_type)
+def ik_fk_coordinate_error(x_desired, y_desired, link_1, link_2, step, arm_type, offset):
+    IK = inverse_kinematics(x_desired, y_desired, link_1, link_2, arm_type, offset)
     if IK is not None:
         (theta_1_ik_rads, theta_2_ik_rads) = IK
         (theta_1_ik, theta_2_ik) = (math.degrees(theta_1_ik_rads), math.degrees(theta_2_ik_rads)) # convert to degrees
         (theta_1_ik_nearest_step, theta_2_ik_nearest_step) = (round(theta_1_ik / step) * step, round(theta_2_ik / step) * step) # round degrees down to nearest step
-        (x_actual, y_actual) = forward_kinematics(math.radians(theta_1_ik_nearest_step), link_1, math.radians(theta_2_ik_nearest_step), link_2, "sum") # calculate new FK
+        (x_actual, y_actual) = forward_kinematics(math.radians(theta_1_ik_nearest_step), link_1, math.radians(theta_2_ik_nearest_step), link_2, "sum", offset) # calculate new FK
         error_coordinates = (x_desired-x_actual, y_desired-y_actual) # get error between FK rounded step and actual 
         return error_coordinates
     else:
@@ -111,7 +113,8 @@ def generate_randomized_data_points(data, datapoints_desired):
     return randomized_data
 
 
-def build_scatter_plot(data, check_data_points, filename, link_1, link_2, step, arm_type):
+def build_scatter_plot(data, check_data_points, filename, link_1, link_2, step, arm_type, offset_degrees):
+    offset = math.radians(offset_degrees)
     theta_list = data[0]
     xy_list = data[1]
     theta_1_angles, theta_2_angles, x_coordinates, y_coordinates = [], [], [], []
@@ -125,18 +128,18 @@ def build_scatter_plot(data, check_data_points, filename, link_1, link_2, step, 
         # for each coordinate calculate error
         x_desired = check_data_points[0][i]
         y_desired = check_data_points[1][i]
-        errors.append(ik_fk_coordinate_error(x_desired, y_desired, link_1, link_2, step, arm_type))
+        errors.append(ik_fk_coordinate_error(x_desired, y_desired, link_1, link_2, step, arm_type, offset))
     plt.figure(figsize=(8,8))
 
     # draw desired points to check and links and angles to create them from IK
     plt.scatter(check_data_points[0],check_data_points[1],s=30,c='green',alpha=0.5)
     for i in range(len(check_data_points[0])):
         (x_i, y_i) = (check_data_points[0][i], check_data_points[1][i])
-        IK = inverse_kinematics(x_i, y_i, link_1, link_2, arm_type)
+        IK = inverse_kinematics(x_i, y_i, link_1, link_2, arm_type, offset)
         if IK is None: continue
         (theta_1, theta_2) = IK
         info = f"x: {x_i}, y: {y_i} \nt_1: {round(math.degrees(theta_1), 2)}, t_2: {round(math.degrees(theta_2), 2)}"
-        (link_1_x_i, link_1_y_i, link_2_x_i, link_2_y_i) = forward_kinematics(theta_1, link_1, theta_2, link_2, "parts") 
+        (link_1_x_i, link_1_y_i, link_2_x_i, link_2_y_i) = forward_kinematics(theta_1, link_1, theta_2, link_2, "parts", offset) 
         plt.plot([0,link_1_x_i],[0,link_1_y_i],color='black',linestyle='--',linewidth=2)
         plt.plot([link_1_x_i,link_1_x_i+link_2_x_i],[link_1_y_i,link_1_y_i+link_2_y_i],color='red',linestyle='--',linewidth=2)
         plt.text(x_i-1,y_i+.2,info,fontsize=8,color='black')
@@ -162,15 +165,16 @@ def argument_parser():
     parser.add_argument("--link_2", type=float, required=True, help="link 2 length (inches)")
     parser.add_argument("--file", type=str, required=True, help="file location (/DIR/filename) for output .csv and .png files")
     parser.add_argument("--datapoints_desired", type=int, required=True, help="number of points to check if forward and reverse kinematic equations are working as expected")
-    parser.add_argument ("--arm_type", type=str, required=True, help="avaliable arm types are elbow_up and elbow_down")
+    parser.add_argument("--arm_type", type=str, required=True, help="avaliable arm types are elbow_up and elbow_down")
+    parser.add_argument("--offset_degrees", type=float, required=True, help="starting degree offset for theta_2")
     return parser.parse_args()
 
 
 if __name__ == "__main__":
     args = argument_parser()
-    data = build_problem_space(args.min, args.max, args.step, args.link_1, args.link_2, args.arm_type)
+    data = build_problem_space(args.min, args.max, args.step, args.link_1, args.link_2, args.arm_type, args.offset_degrees)
     check_data_points = generate_randomized_data_points(data, args.datapoints_desired) # generate points to check 
-    build_scatter_plot(data, check_data_points, args.file, args.link_1, args.link_2, args.step, args.arm_type)
+    build_scatter_plot(data, check_data_points, args.file, args.link_1, args.link_2, args.step, args.arm_type, args.offset_degrees)
     save_to_csv(data,args.file)
 
 

@@ -4,6 +4,7 @@ struct AnglePair {
   int theta_2; // angle of second linkage
 };
 
+int program_type = 0; // 0 = draw problem space, 1 = go to coordinates from serial
 int sm_pin_1 = A0; // servo motor pin
 int sm_pin_2 = A1; // servo motor pin
 int sm_pin_3 = A2; // servo motor pin
@@ -19,6 +20,8 @@ int servo_min = 0;
 int servo_max = 150;
 int step = 1;
 
+AnglePair current_angles;
+
 bool pen_down; // boolean for pen up or down
 
 void setup() {
@@ -28,8 +31,9 @@ void setup() {
   servo_3.attach(sm_pin_3, sm_min, sm_max);
 
   // Set servo to start position
-  servo_1.write(0);
-  servo_2.write(0);
+  servo_1.write(0); // straight with x-axis
+  servo_2.write(0); // straight with x-axis
+  servo_3.write(0); // pen up position
 
   // Wait until start command
   Serial.begin(9600);
@@ -40,23 +44,38 @@ void setup() {
 }
 
 void loop() {
-  for (int i = servo_min; i < servo_max; i+=step){
-    servo_1.write(i);
-    delay(servo_wait_period);
-    for (int j = servo_min; j < servo_max; j+=step){
-      servo_2.write(j);
-      delay(servo_wait_period); 
+  if (program_type == 1) {
+  // read serial for x, y coordinates and pen-down variable "x_float, y_float, pen_down"
+  float x_value = Serial.parseFloat();
+  float y_value = Serial.parseFloat();
+  float pen_down = Serial.parseInt();
+  // set position to coordinate
+  current_angles = inverse_kinematics(x_value, y_value, linkage_1, linkage_2);
+  servo_1.write(current_angles.theta_1);
+  servo_2.write(current_angles.theta_2);
+  servo_3.write(90*pen_down);
+  }
+  if (program_type == 0) {
+    for (int i = servo_min; i < servo_max; i+=step){
+      servo_1.write(i);
+      delay(servo_wait_period);
+      for (int j = servo_min; j < servo_max; j+=step){
+        servo_2.write(j);
+        delay(servo_wait_period); 
+      }
     }
   }
 }
 
 
-AnglePair reverse_kinematics(float x, float y, float l1, float l2) {
+AnglePair inverse_kinematics(float x, float y, float l1, float l2) {
   // input your desired coordinates and linkage lengths and the 
   // function will return the angles for the linkages 
+  // pythonic: theta_2 = (math.acos((x*x+y*y-link_1*link_1-link_2*link_2)/(2*link_1*link_2)) - offset)*elbow_coefficient
+  // python: theta_1 = math.atan2(y, x) - math.atan2((link_2*math.sin(theta_2)),(link_1+link_2*math.cos(theta_2)))
   AnglePair resultant_angles;
-  resultant_angles.theta_2 = acos((x*x+y*y-l1*l1-l2*l2)/(-2*l1*l2))*180/PI;
-  resultant_angles.theta_1 = (atan(y/x)+atan((l2*sin(resultant_angles.theta_1))/(l1+l2*cos(resultant_angles.theta_1))))*180/PI;
+  resultant_angles.theta_2 = acos((x*x+y*y-l1*l1-l2*l2)/(2*l1*l2))*180/PI;
+  resultant_angles.theta_1 = (atan(y/x)+atan((l2*sin(resultant_angles.theta_2))/(l1+l2*cos(resultant_angles.theta_2))))*180/PI;
   return(resultant_angles);
 }
 
