@@ -46,7 +46,7 @@ void setup() {
 
 void loop() {
   if (program_type == 1) {
-    if (Serial.avaliable() > 0){
+    if (Serial.available() > 0){
       // read serial for x, y coordinates and pen-down variable "x_float, y_float, pen_down"
       float x_value = Serial.parseFloat();
       float y_value = Serial.parseFloat();
