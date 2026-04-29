@@ -6,7 +6,7 @@ struct AnglePair {
   float theta_2; // angle of second linkage
 };
 
-int program_type = 0; // 0 = draw problem space, 1 = go to coordinates from serial
+int program_type = 1; // 0 = draw problem space, 1 = go to coordinates from serial
 int sm_pin_1 = A0; // servo motor pin
 int sm_pin_2 = A1; // servo motor pin
 int sm_pin_3 = A2; // servo motor pin
