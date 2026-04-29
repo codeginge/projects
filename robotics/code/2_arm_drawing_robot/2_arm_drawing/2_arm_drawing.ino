@@ -55,8 +55,8 @@ void loop() {
       float pen_down = Serial.parseInt();
       // set position to coordinate
       desired_angles = inverse_kinematics(x_value, y_value, linkage_1, linkage_2);
-      int desired_theta_1 = floor(current_angles.theta_1 * 180 / PI);
-      int desired_theta_2 = floor(current_angles.theta_2 * 180 / PI);
+      int desired_theta_1 = floor(desired_angles.theta_1 * 180 / PI);
+      int desired_theta_2 = floor(desired_angles.theta_2 * 180 / PI);
       // add angle increment until close enough
       int angle_increment = 1;
       while (current_angles.theta_1 != desired_theta_1 || current_angles.theta_2 != desired_theta_2) {
