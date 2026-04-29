@@ -64,11 +64,11 @@ void loop() {
         if (current_angles.theta_1 > desired_theta_1) {current_angles.theta_1 -= angle_increment;}
         if (current_angles.theta_2 > desired_theta_2) {current_angles.theta_2 += angle_increment;}
         if (current_angles.theta_2 > desired_theta_2) {current_angles.theta_2 -= angle_increment;}
+        servo_1.write(current_angles.theta_1);
+        servo_2.write(current_angles.theta_2);
+        servo_3.write(90*pen_down);
+        delay(servo_wait_period);
       }
-      servo_1.write(current_angles.theta_1);
-      servo_2.write(current_angles.theta_2);
-      servo_3.write(90*pen_down);
-      delay(servo_wait_period);
       Serial.print("Moved to: "); Serial.print(x_value); 
       Serial.print(","); Serial.println(y_value);
     }
