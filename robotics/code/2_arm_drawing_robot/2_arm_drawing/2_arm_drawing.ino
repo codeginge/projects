@@ -23,6 +23,7 @@ int servo_max = 150;
 int step = 1;
 
 AnglePair current_angles;
+AnglePair desired_angles;
 
 bool pen_down; // boolean for pen up or down
 
@@ -51,13 +52,21 @@ void loop() {
       // read serial for x, y coordinates and pen-down variable "x_float, y_float, pen_down" line by line
       float x_value = Serial.parseFloat();
       float y_value = Serial.parseFloat();
-      int pen_down = Serial.parseInt();
+      float pen_down = Serial.parseInt();
       // set position to coordinate
-      current_angles = inverse_kinematics(x_value, y_value, linkage_1, linkage_2);
-      int current_theta_1 = floor(current_angles.theta_1 * 180 / PI);
-      int current_theta_2 = floor(current_angles.theta_2 * 180 / PI);
-      servo_1.write(current_theta_1);
-      servo_2.write(current_theta_2);
+      desired_angles = inverse_kinematics(x_value, y_value, linkage_1, linkage_2);
+      int desired_theta_1 = floor(current_angles.theta_1 * 180 / PI);
+      int desired_theta_2 = floor(current_angles.theta_2 * 180 / PI);
+      // add angle increment until close enough
+      int angle_increment = 1;
+      while (current_angles.theta_1 != desired_theta_1 && current_angles.theta_2 != desired_theta_2) {
+        if (current_angles.theta_1 < desired_theta_1) {current_angles.theta_1 += angle_increment;}
+        if (current_angles.theta_1 > desired_theta_1) {current_angles.theta_1 -= angle_increment;}
+        if (current_angles.theta_2 > desired_theta_2) {current_angles.theta_2 -= angle_increment;}
+        if (current_angles.theta_2 > desired_theta_2) {current_angles.theta_2 -= angle_increment;}
+      }
+      servo_1.write(current_angles.theta_1);
+      servo_2.write(current_angles.theta_2);
       servo_3.write(90*pen_down);
       delay(servo_wait_period);
       Serial.print("Moved to: "); Serial.print(x_value); 
