@@ -68,6 +68,10 @@ void loop() {
         servo_2.write(current_angles.theta_2);
         servo_3.write(90*pen_down);
         delay(servo_wait_period);
+        Serial.print("Current: "); Serial.print(current_angles.theta_1);
+        Serial.print(","); Serial.println(current_angles.theta_2);
+        Serial.print("Desired: "); Serial.print(desired_angles.theta_1);
+        Serial.print(","); Serial.println(desired_angles.theta_2);
       }
       Serial.print("Moved to: "); Serial.print(x_value); 
       Serial.print(","); Serial.println(y_value);
