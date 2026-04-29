@@ -50,10 +50,10 @@ void loop() {
   if (program_type == 1) {
     if (Serial.available() > 0){
       // read serial for x, y coordinates and pen-down variable "x_float, y_float, pen_down" line by line
-      if (x_value == 0 && y_value == 0) {continue;}
       float x_value = Serial.parseFloat();
       float y_value = Serial.parseFloat();
       float pen_down = Serial.parseInt();
+      if (x_value == 0 && y_value == 0) {continue;}
       // set position to coordinate
       desired_angles = inverse_kinematics(x_value, y_value, linkage_1, linkage_2);
       int desired_theta_1 = floor(desired_angles.theta_1 * 180 / PI);
