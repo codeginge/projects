@@ -12,6 +12,9 @@ pip install matplotlib
 
 Run Example:
 python3 ./2_arm_problem_space.py --max 120 --min 0 --step 5 --link_1 3.25 --link_2 7 --file "/Users/michael/Desktop/projects/robotics/code/2_arm_drawing_robot/2_arm_problem_space"
+
+Future adds:
+- simulate drawing an image based on coordinates provided
 """
 
 import math
