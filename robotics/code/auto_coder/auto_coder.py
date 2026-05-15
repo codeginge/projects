@@ -60,7 +60,7 @@ def image_to_code(raw_image: np.ndarray) -> str:
         raise FileNotFoundError(f"Could not load image at {image_path}")
     gray = cv2.cvtColor(raw_image,cv2. COLOR_BGR2GRAY)
     denoised = cv2.bilateralFilter(gray, d=9, sigmaColor=75, sigmaSpace=75)
-    sharpen_kernal = np.array([[-1,-1,-1],
+    sharpen_kernel = np.array([[-1,-1,-1],
                                [-1, 9,-1],
                                [-1,-1,-1]])
     sharpened = cv2.filter2D(denoised, -1, sharpen_kernel)
