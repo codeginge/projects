@@ -18,7 +18,7 @@ pip install pytesseract opencv-python==4.10.0.84
 """
 
 import os, cv2, numpy as np, pytesseract, time
-int black_white_threshold_line = 120
+
 
 def capture_image_from_video(camera_index: int = 1) -> np.array:
     # setup USB camera
@@ -54,7 +54,7 @@ def capture_image_from_video(camera_index: int = 1) -> np.array:
     return final_frame
 
 
-def image_to_code(raw_image: np.ndarray) -> str: 
+def image_to_code(raw_image: np.ndarray, black_white_threshold_line: int) -> str: 
     """
     given an image, this will translate the image into text
     """
@@ -91,8 +91,9 @@ def serial_to_arduino(text_to_serial):
 
 if __name__ == "__main__":
     # image to code
+    bw_thresh = 100
     raw_photo = capture_image_from_video(camera_index=1)
-    code = image_to_code(raw_photo)
+    code = image_to_code(raw_photo, bw_thresh)
     print(code)
     # upload_responce = upload_to_arduino(image_to_code(read_image()))
     # test using arduino over serial
