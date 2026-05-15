@@ -30,15 +30,18 @@ def capture_image_from_video(camera_index: int = 1) -> np.array:
             raise RuntimeError("No USB camera detected.")
     cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1920)
     cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 1080)
+    cap.set(cv2.CAP_PROP_AUTOFOCUS, 0)
+    time.sleep(0.1)
+    cap.set(cv2.CAP_PROP_AUTOFOCUS, 1)
     print("Activating IPEVO Document Camera...")
 
     # focus and capture image
     start_time= time.time()
-    while time.time() - start_time < 1.5:
+    while time.time() - start_time < 3.0:
         ret, frame = cap.read()
         if not ret:
             continue
-        cv2.imshow("Snapping Image...",cv2.resize(frame,(852,480)))
+        cv2.imshow("Calibrating...",cv2.resize(frame,(852,480)))
         cv2.waitKey(1)
 
     # Capture and finalize sharp, properly exposed frame
