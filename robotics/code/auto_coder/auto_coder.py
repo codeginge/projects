@@ -72,9 +72,9 @@ def image_to_code(raw_image: np.ndarray, black_white_threshold_line: int) -> str
 
     # convert image to code
     custom_config = r'--oem 3 --psm 4'
-    results = reader.readtext(denoised, detail=0, paragraph=True)
+    code_text = reader.readtext(denoised, detail=0, paragraph=True)
     #code_text = pytesseract.image_to_string(thresh, config=custom_config)
-    code_text = "\n".join(results)
+    #code_text = "\n".join(results)
 
     return(code_text)
 
