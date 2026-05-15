@@ -8,9 +8,9 @@ code types:
 # setup pip environment for MAC
 python3 -m venv myenv 
 source myenv/bin/activate
-pip install 
+pip install pytesseract opencv-python 
 
-# setup python l;ibraries for raspberrypi
+# setup python libraries for raspberrypi
 sudo apt update
 sudo apt install tesseract-ocr tesseract-ocr-eng -y
 sudo apt install libgl1-mesa-glx libglib2.0-0 -y
@@ -29,7 +29,7 @@ def capture_image_from_video(camera_index: int = 1) -> np.array:
         if not cap.isOpened():
             raise RuntimeError("No USB camera detected.")
     cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1920)
-    cap.est(cv2.CAP_PROP_FRAME_HEIGHT, 1080)
+    cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 1080)
     print("Activating IPEVO Document Camera...")
 
     # focus and capture image
@@ -51,15 +51,14 @@ def capture_image_from_video(camera_index: int = 1) -> np.array:
     return final_frame
 
 
-def image_to_code(image_path: np.ndarray) -> str: 
+def image_to_code(raw_image: np.ndarray) -> str: 
     """
     given an image, this will translate the image into text
     """
     # preprocess image with open cv
-    image = cv2.imread(image_path)
-    if image is None:
+    if raw_image is None:
         raise FileNotFoundError(f"Could not load image at {image_path}")
-    gray = cv2.cvtColor(image,cv2. COLOR_BGR2GRAY)
+    gray = cv2.cvtColor(raw_image,cv2. COLOR_BGR2GRAY)
     denoised = cv2.bilateralFilter(gray, d=9, sigmaColor=75, sigmaSpace=75)
     sharpen_kernal = np.array([[-1,-1,-1],
                                [-1, 9,-1],
@@ -98,7 +97,6 @@ if __name__ == "__main__":
     raw_photo = capture_image_from_video(camera_index=1)
     code = image_to_code(raw_photo)
     print(code)
-    
     # upload_responce = upload_to_arduino(image_to_code(read_image()))
     # test using arduino over serial
     # test_command = ""
