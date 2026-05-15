@@ -86,12 +86,6 @@ def serial_to_arduino(text_to_serial):
     return(return_text)
 
 
-def setup_env():
-    # ensure pip libraries are installed
-    # ensure connection to arduino 
-    # ensure connection to overhead camera
-
-
 if __name__ == "__main__":
     # image to code
     raw_photo = capture_image_from_video(camera_index=1)
