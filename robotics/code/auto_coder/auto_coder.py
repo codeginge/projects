@@ -17,7 +17,7 @@ source myenv/bin/activate
 pip install pytesseract opencv-python==4.10.0.84
 """
 
-import os, cv2, numpy as np, pytesseract, time
+import os, cv2, numpy as np, easyocr, time
 
 
 def capture_image_from_video(camera_index: int = 1) -> np.array:
@@ -72,7 +72,9 @@ def image_to_code(raw_image: np.ndarray, black_white_threshold_line: int) -> str
 
     # convert image to code
     custom_config = r'--oem 3 --psm 4'
-    code_text = pytesseract.image_to_string(thresh, config=custom_config)
+    results = reader.readtext(denoised, detail=0, paragraph=True)
+    #code_text = pytesseract.image_to_string(thresh, config=custom_config)
+    code_text = "\n".join(results)
 
     return(code_text)
 
@@ -90,6 +92,7 @@ def serial_to_arduino(text_to_serial):
 
 
 if __name__ == "__main__":
+    reader = easyocr.Reader(['en'], gpu=False)
     # image to code
     bw_thresh = 100
     raw_photo = capture_image_from_video(camera_index=1)
