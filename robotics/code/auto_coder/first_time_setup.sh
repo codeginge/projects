@@ -29,6 +29,27 @@ else
     echo "--> Ollama is already installed..."
 fi
 
+if [ ! -f /etc/systemd/system/ollama.service ]; then
+    echo "--> Adding ollama as a service..."
+    sudo sh -c 'cat > /etc/systemd/system/ollama.service << "EOF"
+    [Unit]
+    Description=Ollama Service
+    After=network-online.target
+    
+    [Service]
+    ExecStart=/usr/bin/ollama serve
+    User=root
+    Restart=always
+    RestartSec=3
+    Environment="OLLAMA_HOST=0.0.0.0:11434"
+    
+    [Install]
+    WantedBy=multi-user.target
+    EOF'
+else
+    echo "--> Ollama service already added..."
+fi
+
 echo "--> Activating and starting ollama background engine"
 sudo systemctl daemon-reload
 sudo systemctl enable ollama
