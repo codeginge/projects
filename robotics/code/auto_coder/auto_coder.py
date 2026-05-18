@@ -80,7 +80,7 @@ def image_to_code(raw_image: np.ndarray, black_white_threshold_line: int) -> str
         "do not explain anything, do not add pleasantries. Just the code."
     )
     cmd = [
-        "./llama.cpp/build/bin/llama-mtmd-cli",
+        "./llama.cpp/build/bin/llama-qwen2vl-cli",
         "-m", "./llama.cpp/models/qwen2.5-vl-3b/model.gguf",
         "--mmproj", "./llama.cpp/models/qwen2.5-vl-3b/mmproj.gguf",
         "--image", temp_img_path,
