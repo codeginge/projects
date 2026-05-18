@@ -19,7 +19,8 @@ pip install --upgrade pip
 pip install ollama opencv-python
 
 echo "--> Installing Ollama system service..."
-curl -fsSL https://ollama.com | sh
+sudo curl -L https://ollama.com -o /usr/bin/ollama
+sudo chmod +x /usr/bin/ollama
 
 echo "--> Waiting for Ollama service to start..."
 sleep 5
