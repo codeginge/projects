@@ -17,7 +17,7 @@ source myenv/bin/activate
 pip install pytesseract opencv-python==4.10.0.84
 """
 
-import os, cv2, numpy as np, easyocr, time
+import os, cv2, numpy as np, easyocr, time, ollama
 
 
 def capture_image_from_video(camera_index: int = 1) -> np.array:
@@ -71,10 +71,26 @@ def image_to_code(raw_image: np.ndarray, black_white_threshold_line: int) -> str
     cv2.imwrite("preprocessed_debug.png", thresh)
 
     # convert image to code
-    custom_config = r'--oem 3 --psm 4'
-    code_text = reader.readtext(denoised, detail=0, paragraph=True)
-    #code_text = pytesseract.image_to_string(thresh, config=custom_config)
-    #code_text = "\n".join(results)
+    success, encoded_image = cv2.imencode('.jpg', thresh)
+    if not success:
+        raise RuntimeError("failed to encode image matrix as JPEG")
+
+    image_bytes = encoded_image.tobytes()
+
+    prompt = (
+        "You are a strict code extraction tool. Look at this handwritten text "
+        "and output ONLY valid, executable Arduino C++ code. Do not include markdown code blocks, "
+        "do not explain anything, do not add pleasantries. Just the code."
+    )
+    response = ollama.chat(
+        model='qwen2.5vl:3b',
+        messages=[{
+            'role': 'user',
+            'content': prompt,
+            'images': [image_bytes]
+        }]
+    )
+    code_text = response['message']['content']
 
     return(code_text)
 
