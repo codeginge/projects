@@ -30,7 +30,7 @@ else
 fi
 
 echo "--> Activating and starting ollama background engine"
-sudo systemctl deamon-reload
+sudo systemctl daemon-reload
 sudo systemctl enable ollama
 sudo systemctl start ollama
 
