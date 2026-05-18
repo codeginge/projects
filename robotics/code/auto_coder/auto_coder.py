@@ -88,7 +88,15 @@ def image_to_code(raw_image: np.ndarray, black_white_threshold_line: int) -> str
         "-c", "2048",      # Tight context loop to save RAM 
         "-t", "4"          # Restrict processing to exactly 4 CPU cores
     ]
-    result = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, text=True)
+    result = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+
+    if result.returncode != 0:
+        print("\n[ERROR] llama.cpp execution failed!")
+        print("--- Diagnostic System Error Output ---")
+        print(result.stderr)  # This will print the exact issue (e.g., file not found, bad path)
+        print("---------------------------------------")
+        raise RuntimeError(f"Subprocess failed with exit code {result.returncode}")
+
     raw_output = result.stdout.strip()
     code_text = raw_output.replace("```cpp", "").replace("```", "").strip()
     if os.path.exists(temp_img_path):
