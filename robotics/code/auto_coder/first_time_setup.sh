@@ -59,6 +59,6 @@ echo "--> Waiting for Ollama service to start..."
 sleep 5
 
 echo "--> Pulling Ollama Qwen2.5-VL 3B model"
-/usr/bin/ollama pull qwen2.5vl:3b
+/usr/bin/ollama pull qwen2.5vl:3b-instruct-q4_K_M
 
 
