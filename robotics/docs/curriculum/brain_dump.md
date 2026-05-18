@@ -55,3 +55,31 @@ DUMP
 
 coding as a practice
 
+Students will 
+1. engage with
+    1. github
+    1. reference materials
+    1. tutorials (websites and videos)
+    1. articles
+    1. research papers
+1. produce
+    1. written code
+    1. 3D models
+    1. design drawings
+    1. flow charts 
+        1. system functions
+        1. data flow
+    1. project tutorials
+    1. github documentation
+    1. working robotics systems
+    1. presentations
+    1. system setup bash scripts
+    1. robotics journal
+        1. maintinence entries
+        1. list of projects
+        1. project timelines
+        1. ideas dumps 
+        1. brainstorms 
+        1. design sketches
+        1. pages are dated
+        1. NOTE: this would be a graded
