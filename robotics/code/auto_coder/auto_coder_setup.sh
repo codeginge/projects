@@ -19,13 +19,13 @@ pip install --upgrade pip
 pip install ollama opencv-python
 
 echo "--> Installing Ollama system service..."
-sudo curl -L https://ollama.com -o /usr/bin/ollama
+curl -fsSL https://ollama.com/download/ollama-linux-arm64.tar.zst | sudo tar x --zstd -C /usr
 sudo chmod +x /usr/bin/ollama
 
 echo "--> Waiting for Ollama service to start..."
 sleep 5
 
 echo "--> Pulling Ollama Qwen2.5-VL 3B model"
-ollama pull qwen2.5vl:3b
+/usr/bin/ollama pull qwen2.5vl:3b
 
 
