@@ -80,15 +80,19 @@ def image_to_code(raw_image: np.ndarray, black_white_threshold_line: int) -> str
         "do not explain anything, do not add pleasantries. Just the code."
     )
     cmd = [
-        "./llama.cpp/build/bin/llama-mtmd-cli", 
+        "./llama.cpp/build/bin/llama-mtmd-cli",
         "-m", "./llama.cpp/models/qwen2.5-vl-3b/model.gguf",
         "--mmproj", "./llama.cpp/models/qwen2.5-vl-3b/mmproj.gguf",
         "--image", temp_img_path,
-        "-p", "You are a strict code extraction tool. Look at this handwritten text and output ONLY valid, executable Arduino C++ code. Do not include markdown code blocks, explanations, or pleasantries.",
-        "-n", "512",       # Restrict maximum output tokens
-        "-c", "2048",      # Tight context loop to save RAM 
-        "-t", "4"          # Restrict processing to exactly 4 CPU cores
+        # System flag to strictly dictate behavioral output constraints
+        "-sys", "You are a strict code extraction tool. Look at this handwritten text and output ONLY valid, executable Arduino C++ code. Do not include markdown code blocks, explanations, or pleasantries.",
+        # Prompt flag tells the model what to do with the specific image
+        "-p", "Transcribe the code from this image.",
+        "-n", "512", # Maximum token threshold for the generated response
+        "-c", "3072", # Expanded safely to account for visual patch tokens + your 512 output
+        "-t", "4" # Parallelizes across exactly 4 processing cores
     ]
+
     result = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
 
     if result.returncode != 0:
