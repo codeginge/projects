@@ -16,7 +16,7 @@ source myenv/bin/activate
 pip install opencv-python==4.10.0.84
 """
 
-import os, cv2, numpy as np, time, ollama
+import os, cv2, numpy as np, time, subprocess
 
 
 def capture_image_from_video(camera_index: int = 1) -> np.array:
@@ -70,26 +70,29 @@ def image_to_code(raw_image: np.ndarray, black_white_threshold_line: int) -> str
     cv2.imwrite("preprocessed_debug.png", thresh)
 
     # convert image to code
-    success, encoded_image = cv2.imencode('.jpg', thresh)
-    if not success:
-        raise RuntimeError("failed to encode image matrix as JPEG")
-
-    image_bytes = encoded_image.tobytes()
+    temp_img_path = "processed_ocr_target.jpg"
+    cv2.imwrite(temp_img_path, thresh)
 
     prompt = (
         "You are a strict code extraction tool. Look at this handwritten text "
         "and output ONLY valid, executable Arduino C++ code. Do not include markdown code blocks, "
         "do not explain anything, do not add pleasantries. Just the code."
     )
-    response = ollama.chat(
-        model='qwen2.5vl:3b-q4_K_M',
-        messages=[{
-            'role': 'user',
-            'content': prompt,
-            'images': [image_bytes]
-        }]
-    )
-    code_text = response['message']['content']
+    cmd = [
+        "./llama.cpp/build/bin/llama-minicpmv", 
+        "-m", "./llama.cpp/models/qwen2.5-vl-3b/model.gguf",
+        "--mmproj", "./llama.cpp/models/qwen2.5-vl-3b/mmproj.gguf",
+        "--image", temp_img_path,
+        "-p", "You are a strict code extraction tool. Look at this handwritten text and output ONLY valid, executable Arduino C++ code. Do not include markdown code blocks, explanations, or pleasantries.",
+        "-n", "512",       # Restrict maximum output tokens
+        "-c", "2048",      # Tight context loop to save RAM 
+        "-t", "4"          # Restrict processing to exactly 4 CPU cores
+    ]
+    result = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, text=True)
+    raw_output = result.stdout.strip()
+    code_text = raw_output.replace("```cpp", "").replace("```", "").strip()
+    if os.path.exists(temp_img_path):
+    os.remove(temp_img_path)
 
     return(code_text)
 
