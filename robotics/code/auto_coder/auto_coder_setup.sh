@@ -3,6 +3,7 @@ set -e
 echo "==============================================="
 echo "Running Setup Script for AUTO CODER for rpi 500"
 echo "==============================================="
+sudo apt install pv -y
 
 echo "--> Updating system packages..."
 sudo apt update && sudo apt upgrade -y
@@ -19,7 +20,7 @@ pip install --upgrade pip
 pip install ollama opencv-python
 
 echo "--> Installing Ollama system service..."
-curl -fsSL https://ollama.com/download/ollama-linux-arm64.tar.zst | sudo tar x --zstd -C /usr
+curl -L "https://ollama.com/download/ollama-linux-arm64.tar.zst" | pv | sudo tar x --zstd -C /usr
 sudo chmod +x /usr/bin/ollama
 
 echo "--> Waiting for Ollama service to start..."
