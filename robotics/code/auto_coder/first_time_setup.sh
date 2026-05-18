@@ -23,6 +23,11 @@ echo "--> Installing Ollama system service..."
 curl -L "https://ollama.com/download/ollama-linux-arm64.tar.zst" | pv | sudo tar x --zstd -C /usr
 sudo chmod +x /usr/bin/ollama
 
+echo "--> Activating and starting ollama background engine"
+sudo systemctl deamon-reload
+sudo systemctl enable ollama
+sudo systemctl start ollama
+
 echo "--> Waiting for Ollama service to start..."
 sleep 5
 
