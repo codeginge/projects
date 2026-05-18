@@ -92,7 +92,7 @@ def image_to_code(raw_image: np.ndarray, black_white_threshold_line: int) -> str
     raw_output = result.stdout.strip()
     code_text = raw_output.replace("```cpp", "").replace("```", "").strip()
     if os.path.exists(temp_img_path):
-    os.remove(temp_img_path)
+        os.remove(temp_img_path)
 
     return(code_text)
 
