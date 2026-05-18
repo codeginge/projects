@@ -83,7 +83,7 @@ def image_to_code(raw_image: np.ndarray, black_white_threshold_line: int) -> str
         "do not explain anything, do not add pleasantries. Just the code."
     )
     response = ollama.chat(
-        model='qwen2.5vl:3b',
+        model='qwen2.5vl:3b-q4_K_M',
         messages=[{
             'role': 'user',
             'content': prompt,
