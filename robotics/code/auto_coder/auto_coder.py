@@ -70,8 +70,9 @@ def image_to_code(raw_image: np.ndarray, black_white_threshold_line: int) -> str
     cv2.imwrite("preprocessed_debug.png", thresh)
 
     # convert image to code
+    ocr_ready_image = cv2.cvtColor(thresh, cv2.COLOR_GRAY2BGR)
     temp_img_path = "processed_ocr_target.jpg"
-    cv2.imwrite(temp_img_path, thresh)
+    cv2.imwrite(temp_img_path, ocr_ready_image)
 
     prompt = (
         "You are a strict code extraction tool. Look at this handwritten text "
