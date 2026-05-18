@@ -7,17 +7,16 @@ code types:
 
 # setup python libraries for raspberrypi
 sudo apt update
-sudo apt install tesseract-ocr tesseract-ocr-eng -y
 sudo apt install libgl1-mesa-glx libglib2.0-0 -y
 sudo apt install python3-opencv -y
 
 # setup pip environment for MAC
 python3 -m venv myenv
 source myenv/bin/activate
-pip install pytesseract opencv-python==4.10.0.84
+pip install opencv-python==4.10.0.84
 """
 
-import os, cv2, numpy as np, easyocr, time, ollama
+import os, cv2, numpy as np, time, ollama
 
 
 def capture_image_from_video(camera_index: int = 1) -> np.array:
