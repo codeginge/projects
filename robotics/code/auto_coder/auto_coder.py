@@ -110,7 +110,6 @@ def serial_to_arduino(text_to_serial):
 
 
 if __name__ == "__main__":
-    reader = easyocr.Reader(['en'], gpu=False)
     # image to code
     bw_thresh = 100
     raw_photo = capture_image_from_video(camera_index=1)
