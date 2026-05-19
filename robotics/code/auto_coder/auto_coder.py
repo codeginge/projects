@@ -190,14 +190,14 @@ def upload_to_arduino(code_dir):
     # compile
     try:
         result = subprocess.run(compile_command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,text=True,check=True)
-        arduino_log += result.result.stdout
+        arduino_log += result.stdout
     except subprocess.CalledProcessError as e:
         arduino_log += e
 
     # upload
     try:
         result = subprocess.run(upload_command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,text=True,check=True)
-        arduino_log += result.result.stdout
+        arduino_log += result.stdout
     except subprocess.CalledProcessError as e:
         arduino_log += e
 
