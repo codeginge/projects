@@ -29,6 +29,7 @@ hf download ggml-org/Qwen2.5-VL-3B-Instruct-GGUF \
     --include "Qwen2.5-VL-3B-Instruct-Q4_K_M.gguf" \
     --local-dir ./models
 
+echo "--> Downloading multimodal projector to '/models' directory"
 hf download ggml-org/Qwen2.5-VL-3B-Instruct-GGUF \
     --include "mmproj-Qwen2.5-VL-3B-Instruct-Q8_0.gguf" \
     --local-dir ./models
