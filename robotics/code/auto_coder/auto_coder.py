@@ -128,9 +128,9 @@ def image_to_code(raw_image: np.ndarray, black_white_threshold_line: int) -> str
         "do not explain anything, do not add pleasantries. Just the code."
     )
     cmd = [
-        "./llama.cpp/build/bin/llama-qwen2vl-cli",
-        "-m", "./llama.cpp/models/qwen2.5-vl-3b/model.gguf",
-        "--mmproj", "./llama.cpp/models/qwen2.5-vl-3b/mmproj.gguf",
+        "./llama.cpp/build/bin/llama-cli",
+        "-m", "./models/Qwen2.5-VL-3B-Instruct-Q4_K_M.gguf",
+        "--mmproj", "./models/mmproj-Qwen2.5-VL-3B-Instruct-Q4_K_M.gguf",
         "--image", temp_img_path,
         # System flag to strictly dictate behavioral output constraints
         "-sys", "You are a strict code extraction tool. Look at this handwritten text and output ONLY valid, executable Arduino C++ code. Do not include markdown code blocks, explanations, or pleasantries.",
