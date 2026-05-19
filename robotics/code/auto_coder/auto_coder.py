@@ -130,7 +130,7 @@ def image_to_code(raw_image: np.ndarray, black_white_threshold_line: int) -> str
     cmd = [
         "./llama.cpp/build/bin/llama-cli",
         "-m", "./models/Qwen2.5-VL-3B-Instruct-Q4_K_M.gguf",
-        "--mmproj", "./models/mmproj-Qwen2.5-VL-3B-Instruct-Q4_K_M.gguf",
+        "--mmproj", "./models/mmproj-Qwen2.5-VL-3B-Instruct-Q8_0.gguf",
         "--image", temp_img_path,
         # System flag to strictly dictate behavioral output constraints
         "-sys", "You are a strict code extraction tool. Look at this handwritten text and output ONLY valid, executable Arduino C++ code. Do not include markdown code blocks, explanations, or pleasantries.",
