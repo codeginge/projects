@@ -3,7 +3,6 @@ this code will scan hand written code, run it in the appropriate environment and
 
 code types:
 1. arduino
-2. python (comming soon)
 
 # setup python libraries for raspberrypi
 sudo apt update
@@ -103,7 +102,8 @@ def image_to_code(raw_image: np.ndarray, black_white_threshold_line: int) -> str
         
         M = cv2.getPerspectiveTransform(rect, dst)
         cropped_image = cv2.warpPerspective(raw_image, M, (max_width, max_height))
-        cv2.imwrite("cropped_image.png", cropped_image)
+        temp_cropped_image = "cropped_image.png"
+        cv2.imwrite(temp_cropped_image, cropped_image)
     else:
         cropped_image = raw_image.copy()  # Fallback to original if no 4-point page is detected
 
@@ -115,7 +115,6 @@ def image_to_code(raw_image: np.ndarray, black_white_threshold_line: int) -> str
                                [-1,-1,-1]])
     sharpened = cv2.filter2D(denoised, -1, sharpen_kernel)
     _, thresh = cv2.threshold(sharpened, black_white_threshold_line, 255, cv2.THRESH_BINARY)
-    cv2.imwrite("preprocessed_debug.png", thresh)
 
     # convert image to code
     ocr_ready_image = cv2.cvtColor(thresh, cv2.COLOR_GRAY2BGR)
@@ -164,20 +163,24 @@ def image_to_code(raw_image: np.ndarray, black_white_threshold_line: int) -> str
     
     if os.path.exists(temp_img_path):
         os.remove(temp_img_path)
+    if os.path.exists(temp_cropped_image):
+        os.remove(temp_cropped_image)
 
     return(code_text)
+
 
 def save_code_as_arduino(code, code_name):
     # store text as code in arduino file structure
     folder_path = f"./arduino_code/{code_name}"
     code_file_path = os.path.join(folder_path, f"{code_name}.ino")
     os.makedirs(folder_path, exist_ok=True)
-    with open(file_path, "w", encoding="utf-8") as file:
+    with open(code_file_path, "w", encoding="utf-8") as file:
         file.write(code)
     return(code_file)
 
 
 def upload_to_arduino(code_text):
+    upload_outcome = ""
     return(upload_outcome)
 
 
@@ -194,9 +197,5 @@ if __name__ == "__main__":
     bw_thresh = 200
     raw_photo = capture_image_from_video(camera_index=1)
     code = image_to_code(raw_photo, bw_thresh)
-    print(code)
+    print(f"llama-cli output from qwen2.5 3B model: \n\n {code} \n")
     print(f"Code saved to {save_code_as_arduino(code,"test_1")}")
-    # upload_responce = upload_to_arduino(image_to_code(read_image()))
-    # test using arduino over serial
-    # test_command = ""
-    # arduino_response = serial_to_arduino(test_command)
