@@ -169,8 +169,11 @@ def image_to_code(raw_image: np.ndarray, black_white_threshold_line: int) -> str
 
 def save_code_as_arduino(code, code_name):
     # store text as code in arduino file structure
-    code_file = f"./{code_name}/{code_name}.ino"
-    
+    folder_path = f"./arduino_code/{code_name}"
+    code_file_path = os.path.join(folder_path, f"{code_name}.ino")
+    os.makedirs(folder_path, exists_ok=True)
+    with open(file_path, "w", encoding="utf-8") as file:
+        file.write(code)
     return(code_file)
 
 
@@ -192,6 +195,7 @@ if __name__ == "__main__":
     raw_photo = capture_image_from_video(camera_index=1)
     code = image_to_code(raw_photo, bw_thresh)
     print(code)
+    print(f"Code saved to {save_code_as_arduino(code,"test_1")}")
     # upload_responce = upload_to_arduino(image_to_code(read_image()))
     # test using arduino over serial
     # test_command = ""
