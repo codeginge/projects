@@ -140,7 +140,8 @@ def image_to_code(raw_image: np.ndarray, black_white_threshold_line: int) -> str
         "-c", "3072", # Expanded safely to account for visual patch tokens + your 512 output
         "-t", "4", # Parallelizes across exactly 4 processing cores
         "--no-display-prompt",
-        "--predict", "512"
+        "--predict", "512",
+        "-no-cnv"
     ]
 
     result = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
