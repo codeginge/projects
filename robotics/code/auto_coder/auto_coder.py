@@ -183,8 +183,8 @@ def upload_to_arduino(code_dir):
     upload_outcome = ""
     PORT = "/dev/ttyUSB0"
     FQBN = "arduino:avr:nano:cpu=atmega328"
-    compile_command = ["arduino-cli", "compile", "-p", port, "--fqbn", FQBN, code_dir]
-    upload_command = ["arduino-cli", "upload", "-p", port, "--fqbn", FQBN, code_dir]
+    compile_command = ["arduino-cli", "compile", "-p", PORT, "--fqbn", FQBN, code_dir]
+    upload_command = ["arduino-cli", "upload", "-p", PORT, "--fqbn", FQBN, code_dir]
     arduino_log = ""
 
     # compile
