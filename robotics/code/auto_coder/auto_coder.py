@@ -140,7 +140,8 @@ def image_to_code(raw_image: np.ndarray, black_white_threshold_line: int) -> str
         "-c", "3072", # Expanded safely to account for visual patch tokens + your 512 output
         "-t", "4", # Parallelizes across exactly 4 processing cores
         "--predict", "512",
-        "-st"
+        "-st",
+        "--simple-io"
     ]
 
     result = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
@@ -169,6 +170,7 @@ def image_to_code(raw_image: np.ndarray, black_white_threshold_line: int) -> str
 def save_code_as_arduino(code, code_name):
     # store text as code in arduino file structure
     code_file = f"./{code_name}/{code_name}.ino"
+    
     return(code_file)
 
 
