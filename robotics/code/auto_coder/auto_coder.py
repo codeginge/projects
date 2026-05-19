@@ -107,8 +107,8 @@ def image_to_code(raw_image: np.ndarray, black_white_threshold_line: int) -> str
         cropped_image = raw_image.copy()  # Fallback to original if no 4-point page is detected
 
     # convert cropped image to black and white
-    
-    denoised = cv2.bilateralFilter(gray, d=9, sigmaColor=75, sigmaSpace=75)
+    gray_cropped = cv2.cvtColor(cropped_image, cv2.COLOR_BGR2GRAY)    
+    denoised = cv2.bilateralFilter(gray_cropped, d=9, sigmaColor=75, sigmaSpace=75)
     sharpen_kernel = np.array([[-1,-1,-1],
                                [-1, 9,-1],
                                [-1,-1,-1]])
