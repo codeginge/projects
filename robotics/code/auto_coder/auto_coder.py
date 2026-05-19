@@ -113,7 +113,7 @@ def image_to_code(raw_image: np.ndarray, black_white_threshold_line: int) -> str
                                [-1, 9,-1],
                                [-1,-1,-1]])
     sharpened = cv2.filter2D(denoised, -1, sharpen_kernel)
-    _, thresh = cv2.threshold(sharpened, black_white_threshold_line, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+    _, thresh = cv2.threshold(sharpened, black_white_threshold_line, 255, cv2.THRESH_BINARY)
     cv2.imwrite("preprocessed_debug.png", thresh)
 
     # convert image to code
@@ -171,7 +171,7 @@ def serial_to_arduino(text_to_serial):
 
 if __name__ == "__main__":
     # image to code
-    bw_thresh = 100
+    bw_thresh = 120
     raw_photo = capture_image_from_video(camera_index=1)
     code = image_to_code(raw_photo, bw_thresh)
     print(code)
