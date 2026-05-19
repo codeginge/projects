@@ -25,7 +25,11 @@ cmake --build build -j$(nproc)
 echo "--> Downloading core language model to '/models' directory"
 cd ..
 mkdir -p models
-huggingface-cli download ggml-org/Qwen2.5-VL-3B-Instruct-GGUF \
+hf download ggml-org/Qwen2.5-VL-3B-Instruct-GGUF \
     --include "Qwen2.5-VL-3B-Instruct-Q4_K_M.gguf" \
+    --local-dir ./models
+
+hf download ggml-org/Qwen2.5-VL-3B-Instruct-GGUF \
+    --include "mmproj-Qwen2.5-VL-3B-Instruct-Q8_0.gguf" \
     --local-dir ./models
 

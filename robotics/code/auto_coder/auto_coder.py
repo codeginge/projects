@@ -60,7 +60,13 @@ def image_to_code(raw_image: np.ndarray, black_white_threshold_line: int) -> str
     # preprocess image with open cv
     if raw_image is None:
         raise FileNotFoundError(f"Could not load image at {image_path}")
+
+    # crop image to page corners
     gray = cv2.cvtColor(raw_image,cv2. COLOR_BGR2GRAY)
+
+
+    # convert cropped image to black and white
+    
     denoised = cv2.bilateralFilter(gray, d=9, sigmaColor=75, sigmaSpace=75)
     sharpen_kernel = np.array([[-1,-1,-1],
                                [-1, 9,-1],
