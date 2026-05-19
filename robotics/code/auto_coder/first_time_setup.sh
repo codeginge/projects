@@ -35,3 +35,10 @@ hf download ggml-org/Qwen2.5-VL-3B-Instruct-GGUF \
     --include "mmproj-Qwen2.5-VL-3B-Instruct-Q8_0.gguf" \
     --local-dir ./models
 
+echo "--> installing arduino-cli"
+
+
+echo "--> seting up arduino nano"
+arduino-cli core update-index
+arduino-cli core install arduino:avr
+

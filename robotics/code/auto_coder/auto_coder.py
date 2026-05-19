@@ -179,9 +179,29 @@ def save_code_as_arduino(code, code_name):
     return(code_file_path)
 
 
-def upload_to_arduino(code_text):
+def upload_to_arduino(code_dir):
     upload_outcome = ""
-    return(upload_outcome)
+    PORT = "/dev/ttyUSB0"
+    FQBN = "arduino:avr:nano:cpu=atmega328"
+    compile_command = ["arduino-cli", "compile", "-p", port, "--fqbn", FQBN, code_dir]
+    upload_command = ["arduino-cli", "upload", "-p", port, "--fqbn", FQBN, code_dir]
+    arduino_log = ""
+
+    # compile
+    try:
+        result = subprocess.run(compile_command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,text=True,check=True)
+        arduino_log += result.result.stdout
+    except subprocess.CalledProcessError as e:
+        arduino_log += e
+
+    # upload
+    try:
+        result = subprocess.run(upload_command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,text=True,check=True)
+        arduino_log += result.result.stdout
+    except subprocess.CalledProcessError as e:
+        arduino_log += e
+
+    return(arduino_log)
 
 
 def serial_to_arduino(text_to_serial):
@@ -197,5 +217,9 @@ if __name__ == "__main__":
     bw_thresh = 200
     raw_photo = capture_image_from_video(camera_index=1)
     code = image_to_code(raw_photo, bw_thresh)
-    print(f"llama-cli output from qwen2.5 3B model: \n\n {code} \n")
-    print(f"Code saved to {save_code_as_arduino(code,"test_1")}")
+    code_file_location = save_code_as_arduino(code,"test_1")
+    print(f"--- CODE OUTPUT ---\n*from llama-cli output from qwen2.5 3B model: \n\n {code} \n")
+    print(f"Code saved to {code_file_location}")
+    log = upload_to_arduino(code_file_location)
+    print(f"--- ARDUINO OUTPUT LOG ---\n\n{log}")
+
