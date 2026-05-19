@@ -139,9 +139,10 @@ def image_to_code(raw_image: np.ndarray, black_white_threshold_line: int) -> str
         "-n", "512", # Maximum token threshold for the generated response
         "-c", "3072", # Expanded safely to account for visual patch tokens + your 512 output
         "-t", "4", # Parallelizes across exactly 4 processing cores
-        "--no-display-prompt",
         "--predict", "512",
-        "-no-cnv"
+        "-no-cnv",
+        "--no-display-prompt",
+        "-st"
     ]
 
     result = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
@@ -159,6 +160,11 @@ def image_to_code(raw_image: np.ndarray, black_white_threshold_line: int) -> str
         os.remove(temp_img_path)
 
     return(code_text)
+
+def save_code_as_arduino(code, code_name):
+    # store text as code in arduino file structure
+    code_file = f"./{code_name}/{code_name}.ino"
+    return(code_file)
 
 
 def upload_to_arduino(code_text):
