@@ -171,7 +171,7 @@ def save_code_as_arduino(code, code_name):
     # store text as code in arduino file structure
     folder_path = f"./arduino_code/{code_name}"
     code_file_path = os.path.join(folder_path, f"{code_name}.ino")
-    os.makedirs(folder_path, exists_ok=True)
+    os.makedirs(folder_path, exist_ok=True)
     with open(file_path, "w", encoding="utf-8") as file:
         file.write(code)
     return(code_file)
