@@ -176,7 +176,7 @@ def save_code_as_arduino(code, code_name):
     os.makedirs(folder_path, exist_ok=True)
     with open(code_file_path, "w", encoding="utf-8") as file:
         file.write(code)
-    return(code_file)
+    return(code_file_path)
 
 
 def upload_to_arduino(code_text):
