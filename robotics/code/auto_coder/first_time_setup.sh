@@ -9,11 +9,12 @@ echo "--> Updating system packages..."
 sudo apt update && sudo apt upgrade -y
 
 echo "--> Installing python3 pip and dependencies..."
-sudo apt install python3-pip python3-venv build-essential cmake git wget curl -y
+sudo apt install python3-pip python3-venv python3-opencv libgl1-mesa-glx libglib2.0-0 build-essential cmake git wget curl -y
 
 echo "--> install huggingface-cli"
 python3 -m venv myenv
 source myenv/bin/activate
+pip install opencv-python==4.10.0.84
 pip3 install -U "huggingface_hub[cli]"
 
 echo "--> Installing llama.cpp..."
