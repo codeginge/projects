@@ -11,28 +11,21 @@ sudo apt update && sudo apt upgrade -y
 echo "--> Installing python3 pip and dependencies..."
 sudo apt install python3-pip python3-venv build-essential cmake git wget curl -y
 
+echo "--> install huggingface-cli"
+python3 -m venv myenv
+source myenv/bin/activate
+pip3 install -U "huggingface_hub[cli]"
+
 echo "--> Installing llama.cpp..."
 git clone https://github.com/ggml-org/llama.cpp.git
 cd llama.cpp
-cmake -B build -DLLAMA_AVX2=ON -DLLAMA_F16C=ON -DLLAMA_FMA=ON
-cmake --build build --config Release --target llama-qwen2vl-cli
+cmake -B build -DCMAKE_BUILD_TYPE=Release
+cmake --build build -j$(nproc)
 
-mkdir -p models/qwen2.5-vl-3b
-cd models/qwen2.5-vl-3b
-
-echo "--> Download the main text model and the vision projector (mmproj)"
-wget -O qwen2.5-vl-3b-instruct.gguf https://huggingface.co
-wget -O mmproj.gguf https://huggingface.co
-
-echo "--> Setting up python virtual environment..."
-python3 -m venv myenv
-source myenv/bin/activate
-
-mkdir -p models/qwen2.5-vl-3b
-
-echo "--> Downloading Language Brain (model.gguf)..."
-curl -L --progress-bar "https://huggingface.co" -o models/qwen2.5-vl-3b/model.gguf
-
-echo "--> Downloading Vision Matrix (mmproj.gguf)..."
-curl -L --progress-bar "https://huggingface.co" -o models/qwen2.5-vl-3b/mmproj.gguf
+echo "--> Downloading core language model to '/models' directory"
+cd ..
+mkdir -p models
+huggingface-cli download ggml-org/Qwen2.5-VL-3B-Instruct-GGUF \
+    --include "Qwen2.5-VL-3B-Instruct-Q4_K_M.gguf" \
+    --local-dir ./models
 
