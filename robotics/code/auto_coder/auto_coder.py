@@ -103,6 +103,7 @@ def image_to_code(raw_image: np.ndarray, black_white_threshold_line: int) -> str
         
         M = cv2.getPerspectiveTransform(rect, dst)
         cropped_image = cv2.warpPerspective(raw_image, M, (max_width, max_height))
+        cv2.imwrite("cropped_image.png", cropped_image)
     else:
         cropped_image = raw_image.copy()  # Fallback to original if no 4-point page is detected
 
@@ -118,8 +119,6 @@ def image_to_code(raw_image: np.ndarray, black_white_threshold_line: int) -> str
 
     # convert image to code
     ocr_ready_image = cv2.cvtColor(thresh, cv2.COLOR_GRAY2BGR)
-    temp_img_path = "processed_ocr_target.jpg"
-    cv2.imwrite(temp_img_path, ocr_ready_image)
 
     prompt = (
         "You are a strict code extraction tool. Look at this handwritten text "
@@ -171,7 +170,7 @@ def serial_to_arduino(text_to_serial):
 
 if __name__ == "__main__":
     # image to code
-    bw_thresh = 120
+    bw_thresh = 200
     raw_photo = capture_image_from_video(camera_index=1)
     code = image_to_code(raw_photo, bw_thresh)
     print(code)
