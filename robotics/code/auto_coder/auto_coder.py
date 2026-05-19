@@ -16,7 +16,7 @@ source myenv/bin/activate
 pip install opencv-python==4.10.0.84
 """
 
-import os, cv2, numpy as np, time, subprocess
+import os, cv2, numpy as np, time, subprocess, re
 
 
 def capture_image_from_video(camera_index: int = 1) -> np.array:
@@ -153,7 +153,14 @@ def image_to_code(raw_image: np.ndarray, black_white_threshold_line: int) -> str
         raise RuntimeError(f"Subprocess failed with exit code {result.returncode}")
 
     raw_output = result.stdout.strip()
-    code_text = raw_output.replace("```cpp", "").replace("```", "").strip()
+    match = re.search(r'```cpp\n(.*?)```', raw_output, re.DOTALL)
+    if match:
+        code_text = match.group(1).strip()
+    else:
+        print("no '''ccp block found... \n subprocess out put is as follows: ")
+        general_match = re.search(r'```[a-zA-Z]*\n(.*?)```', raw_output, re.DOTALL)
+        code_text = general_match.group(1).strip() if general_match else raw_output.strip()
+    
     if os.path.exists(temp_img_path):
         os.remove(temp_img_path)
 
