@@ -36,8 +36,8 @@ def capture_image_from_video(camera_index: int = 1) -> np.array:
         cap = cv2.VideoCapture(0)
         if not cap.isOpened():
             raise RuntimeError("No USB camera detected.")
-    cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1920)
-    cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 1080)
+    cap.set(cv2.CAP_PROP_FRAME_WIDTH, 3264)
+    cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 2448)
     cap.set(cv2.CAP_PROP_AUTOFOCUS, 0)
     time.sleep(0.1)
     cap.set(cv2.CAP_PROP_AUTOFOCUS, 1)
@@ -45,7 +45,7 @@ def capture_image_from_video(camera_index: int = 1) -> np.array:
 
     # focus and capture image
     start_time= time.time()
-    while time.time() - start_time < 3.0:
+    while time.time() - start_time < 7.0:
         ret, frame = cap.read()
         if not ret:
             continue
