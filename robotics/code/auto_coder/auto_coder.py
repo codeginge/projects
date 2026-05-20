@@ -20,9 +20,12 @@ import os, cv2, numpy as np, time, subprocess, re, argparse
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Generate booking jobs for campsite reservations.")
-    parser.add_argument("-n", type=bool, help="images in directory are labeled")
-    parser.add_argument("-b", type=str, help="run batch operations in the provided directory")
-    parser.add_argument("-t", type=str, help="run tests in test folder")
+    parser.add_argument("--named", action='store_true', help="images in directory are labeled")
+    parser.add_argument("--batch_dir", type=str, help="run batch operations in the provided image directory")
+    parser.add_argument("--tests", type=str, help="run tests in test folder")
+    parser.add_argument("--port", required=True, type=str, help="port of the arduino for arduino-cli to use")
+    parser.add_argument("--fqbn", required=True, type=str, help="the fully qualified board name to use for uploading to arduino")
+    parser.add_argument("--bw_thresh", type=int, help="the black white threshold. change if processed image is washed out or too dark for all text to be seen")
 
 
 def capture_image_from_video(camera_index: int = 1) -> np.array:
@@ -222,7 +225,7 @@ def serial_to_arduino(text_to_serial):
 if __name__ == "__main__":
     args = parse_args()
     # image to code
-    bw_thresh = 200
+    bw_thresh = args.bw_thresh
     raw_photo = capture_image_from_video(camera_index=1)
     code = image_to_code(raw_photo, bw_thresh)
     code_file_location = save_code_as_arduino(code,"test_1")
