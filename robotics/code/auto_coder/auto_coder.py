@@ -15,7 +15,14 @@ source myenv/bin/activate
 pip install opencv-python==4.10.0.84
 """
 
-import os, cv2, numpy as np, time, subprocess, re
+import os, cv2, numpy as np, time, subprocess, re, argparse
+
+
+def parse_args():
+    parser = argparse.ArgumentParser(description="Generate booking jobs for campsite reservations.")
+    parser.add_argument("-n", type=bool, help="images in directory are labeled")
+    parser.add_argument("-b", type=str, help="run batch operations in the provided directory")
+    parser.add_argument("-t", type=str, help="run tests in test folder")
 
 
 def capture_image_from_video(camera_index: int = 1) -> np.array:
@@ -213,6 +220,7 @@ def serial_to_arduino(text_to_serial):
 
 
 if __name__ == "__main__":
+    args = parse_args()
     # image to code
     bw_thresh = 200
     raw_photo = capture_image_from_video(camera_index=1)
