@@ -27,6 +27,8 @@ def parse_args():
     parser.add_argument("--fqbn", required=True, type=str, help="the fully qualified board name to use for uploading to arduino")
     parser.add_argument("--bw_thresh", required=True, type=int, help="the black white threshold. change if processed image is washed out or too dark for all text to be seen")
 
+    return parser.parse_args()
+
 
 def capture_image_from_video(camera_index: int = 1) -> np.array:
     # setup USB camera
