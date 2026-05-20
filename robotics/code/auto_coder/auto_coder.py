@@ -25,7 +25,7 @@ def parse_args():
     parser.add_argument("--tests", type=str, help="run tests in test folder")
     parser.add_argument("--port", type=str, help="port of the arduino for arduino-cli to use")
     parser.add_argument("--fqbn", type=str, help="the fully qualified board name to use for uploading to arduino")
-    parser.add_argument("--bw_thresh", required=True, type=int, help="the black white threshold. change if processed image is washed out or too dark for all text to be seen")
+    parser.add_argument("--bw_thresh", type=int, default=220, help="the black white threshold. change if processed image is washed out or too dark for all text to be seen")
 
     return parser.parse_args()
 
