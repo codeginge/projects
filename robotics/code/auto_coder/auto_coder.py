@@ -23,8 +23,8 @@ def parse_args():
     parser.add_argument("--named", action='store_true', help="images in directory are labeled")
     parser.add_argument("--batch_dir", type=str, help="run batch operations in the provided image directory")
     parser.add_argument("--tests", type=str, help="run tests in test folder")
-    parser.add_argument("--port", type=str, help="port of the arduino for arduino-cli to use")
-    parser.add_argument("--fqbn", type=str, help="the fully qualified board name to use for uploading to arduino")
+    parser.add_argument("--port", type=str, default="/dev/ttyUSB0",  help="port of the arduino for arduino-cli to use")
+    parser.add_argument("--fqbn", type=str, default="arduino:avr:nano:cpu=atmega328", help="the fully qualified board name to use for uploading to arduino")
     parser.add_argument("--bw_thresh", type=int, default=220, help="the black white threshold. change if processed image is washed out or too dark for all text to be seen")
 
     return parser.parse_args()
@@ -191,10 +191,8 @@ def save_code_as_arduino(code, code_name):
     return(code_file_path)
 
 
-def upload_to_arduino(code_dir):
+def upload_to_arduino(code_dir, PORT, FQBN):
     upload_outcome = ""
-    PORT = "/dev/ttyUSB0"
-    FQBN = "arduino:avr:nano:cpu=atmega328"
     compile_command = ["arduino-cli", "compile", "-p", PORT, "--fqbn", FQBN, code_dir]
     upload_command = ["arduino-cli", "upload", "-p", PORT, "--fqbn", FQBN, code_dir]
     arduino_log = ""
@@ -226,13 +224,20 @@ def serial_to_arduino(text_to_serial):
 
 if __name__ == "__main__":
     args = parse_args()
-    # image to code
-    bw_thresh = args.bw_thresh
-    raw_photo = capture_image_from_video(camera_index=1)
-    code = image_to_code(raw_photo, bw_thresh)
-    code_file_location = save_code_as_arduino(code,"test_1")
-    print(f"--- CODE OUTPUT ---\n*from llama-cli output from qwen2.5 3B model: \n\n {code} \n")
-    print(f"Code saved to {code_file_location}")
-    log = upload_to_arduino(code_file_location)
-    print(f"--- ARDUINO OUTPUT LOG ---\n\n{log}")
+    if args.batch_dir is None:
+        # image to code
+        bw_thresh = args.bw_thresh
+        raw_photo = capture_image_from_video(camera_index=1)
+        code = image_to_code(raw_photo, bw_thresh)
+        code_file_location = save_code_as_arduino(code,"test_1")
+        print(f"--- CODE OUTPUT ---\n*from llama-cli output from qwen2.5 3B model: \n\n {code} \n")
+        print(f"Code saved to {code_file_location}")
+        log = upload_to_arduino(code_file_location, args.port, args.fqbn)
+        print(f"--- ARDUINO OUTPUT LOG ---\n\n{log}")
+    if args.batch_dir:
+        # list all images in dir
+        for image in images:
+            if args.named: 
+                folded_id = image_id
+            # create folder
 
