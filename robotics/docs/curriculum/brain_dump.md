@@ -3,10 +3,10 @@ Brain Dump for ideas about Robotics Class
 Assignment Types
 
 1. robotics journal entries
-    1. based on the travel journal
-    1. made by the students
+    1. based on the travelers notebook
+    1. made by students
     1. expandable for new topics or areas of interest 
-1. project overview
+1. project - driving simulator
     1. outcomes overview
         1. list all items in the project
         1. reference the github with resources for the whole project
