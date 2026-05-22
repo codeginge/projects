@@ -1,5 +1,89 @@
 Brain Dump for ideas about Robotics Class
 
+Assignment Types
+
+1. robotics journal entries
+    1. based on the travel journal
+    1. made by the students
+    1. expandable for new topics or areas of interest 
+1. project overview
+    1. outcomes overview
+        1. list all items in the project
+        1. reference the github with resources for the whole project
+        1. breifly show design files for the full project
+            1. build process flowchart
+            1. input -> output flowchart
+            1. circuit diagram
+            1. design drawings 
+            1. 3D assembly diagram
+    1. component lessons
+        1. vocabulary
+            1. tollerance
+            1. load
+            1. friction
+            1. domain and range
+            1. 
+        1. tools
+            1. caliper 
+            1. multi-meter
+            1. x-acto knife
+            1. soldering iron
+        1. build lessons
+            1. servos and servo horns
+            1. linkages
+            1. gears
+            1. bearings
+            1. nuts, bolts and washers
+            1. assemblies with tight tollerence
+        1. circuit lessons
+            1. potentiometers
+            1. push buttons
+            1. toggle buttons
+            1. breadboads and wires
+        1. coding lessons
+            1. arduino 
+                1. libraries
+                1. setup and loop functions
+                1. variable declearations
+                1. serial print line
+                1. IO pin
+                    1. setup
+                    1. types (analog/digital)
+                    1. writing
+                    1. reading
+                1. math functions
+    1. project checkpoints
+        1. steering wheel
+            1. design and fabricate parts 
+                1. base
+                1. circuit housing
+                1. steering gear mechanism
+                1. steering wheel
+                1. display dial for on/off, L/R, F/B feedback
+            1. circuit build 
+                1. arduino, breadboard, and USB cable
+                1. battery connection
+                1. switch input
+                1. potentiometer input
+                1. servo outputs (on/off, L/R, and F/B)
+                1. footpedal cable input
+                1. wire up connection for all parts
+        1. pedals
+            1. design and fabricate
+                1. base
+                1. circuit housing
+                1. pedal gear mechanisms
+                1. wire housing
+            1. circuit build
+                1. breadboard
+                1. footpedal cable input
+                1. potentiometers 
+                1. wire up connections for all parts
+    1. testing
+        1. steering wheel and foot pedal function as expected
+        1. inputs are moving the output dials as expected
+        1. inputs are communicating to computer for the designated inputs 
+
 ORDER
 1. rules
     1. do not
