@@ -1,5 +1,10 @@
 Brain Dump for ideas about Robotics Class
 
+Ideas
+- write code like writing literature. Notes, letters, essays, books, etc. Connections made in coding are different than connections in writing but there are corilaries. A full automation based on a full understanding of the subject of interest is like a book that fully connects areas of thought on a subject. What are some writing pedagogies that could be applied to writing code? Specifically what practices could be put in place for a class so that writers become more proficient at writing code?
+- what vessels best capture coding? Written or typed? 
+- Robotics final? written part to explain their project code and how it might be used in a different yet similar context. Given the design files, code, and logs for a robot, looking at how the robot is functioning, diagnose the issues with it and suggest design changes for each one    
+
 Assignment Types
 
 1. robotics journal entries
