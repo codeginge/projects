@@ -10,7 +10,13 @@ Assignment Types
 1. robotics journal entries
     1. based on the travelers notebook
     1. made by students
-    1. expandable for new topics or areas of interest 
+    1. expandable for new topics or areas of interest
+    1. journals are kept in room
+    1. all entries are prompted, pointed, and clear
+    1. idea 1
+        1. read passage from the creative act
+        1. write down a few sentences that stood out to you
+        1. write a reflection on how that might impact you as a creator 
 1. project - driving simulator
     1. outcomes overview
         1. list all items in the project
