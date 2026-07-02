@@ -18,6 +18,7 @@ python3 ./random_teams.py \
 '''
 
 import argparse
+import random
 
 def parse_args():
     parser = argparse.ArgumentParser(description="")
@@ -36,6 +37,8 @@ if __name__ == "__main__":
     roster = args.roster
 
     students = parse_names(roster)
-    for student in students:
-        print(student)
+    for i in range(len(students)):
+        rand_student = random.choice(students)
+        print(rand_student)
+        students.remove(rand_student)
 
