@@ -1,0 +1,38 @@
+
+code snippets:
+
+Serial.begin(9600);
+Serial.println("");
+
+#include<HCSR04.h>
+byte triggerPin = 4;
+byte echoPin = 3;
+
+// in void setup()
+HCSR04.begin(triggerPin, echoPin);
+
+// in void loop()
+double* distances = HCSR04.measureDistanceCM();
+Serial.print("Distance to sensor: ");
+Serial.print(distances[0]);
+Serial.println(" cm");
+Serial.println("---");
+
+pinMode(1, INPUT);
+
+int analogValue = analogRead(analogPin);
+
+if (analogValue > threshold) {
+  digitalWrite(ledPin, HIGH);
+} else {
+  digitalWrite(ledPin, LOW);
+}
+
+for (int thisPin = 2; thisPin < 8; thisPin++) {
+  // turn the pin on:
+  digitalWrite(thisPin, HIGH);
+  delay(timer);
+  // turn the pin off:
+  digitalWrite(thisPin, LOW);
+}
+
