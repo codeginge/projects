@@ -12,17 +12,16 @@ source myenv/bin/activate
 
 ## example script call:
 python3 ./random_teams.py \
-    --people 4 \
+    --team_members 4 \
     --roster "./class.txt"
 
 '''
 
-import argparse
-import random
+import argparse, random, math
 
 def parse_args():
     parser = argparse.ArgumentParser(description="")
-    parser.add_argument("--people", type=int, required=True, help="variable description")
+    parser.add_argument("--team_members", type=int, required=True, help="variable description")
     parser.add_argument("--roster", type=str, required=True, help="text file with a student's name per line")
     return parser.parse_args()
 
@@ -33,12 +32,21 @@ def parse_names(roster):
 
 if __name__ == "__main__":
     args = parse_args()
-    people = args.people
+    team_members = args.team_members
     roster = args.roster
 
+    teams = []
     students = parse_names(roster)
-    for i in range(len(students)):
-        rand_student = random.choice(students)
-        print(rand_student)
-        students.remove(rand_student)
-
+    num_teams = math.ceil(len(students)/team_members)
+    for t in range(num_teams):
+        students_to_add = []
+        for m in range(team_members):
+            if len(students) > 0:
+                rand_student = random.choice(students)
+                students_to_add.append(rand_student)
+                students.remove(rand_student)
+        teams.append(students_to_add)
+    for t in range(num_teams):
+        print(f"team {t}:")
+        for member in teams[t]:
+            print(member)
