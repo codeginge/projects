@@ -35,17 +35,15 @@ if __name__ == "__main__":
     team_members = args.team_members
     roster = args.roster
 
-    teams = []
     students = parse_names(roster)
     num_teams = math.ceil(len(students)/team_members)
-    for t in range(num_teams):
-        students_to_add = []
-        for m in range(team_members):
-            if len(students) > 0:
+    teams = [[] for _ in range(num_teams)]
+    while len(students) != 0:
+        for t in range(num_teams):
+            if len(students) != 0:
                 rand_student = random.choice(students)
-                students_to_add.append(rand_student)
+                teams[t].append(rand_student)
                 students.remove(rand_student)
-        teams.append(students_to_add)
     for t in range(num_teams):
         print(f"team {t}:")
         for member in teams[t]:
