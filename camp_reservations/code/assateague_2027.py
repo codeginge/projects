@@ -40,10 +40,8 @@ def parse_args():
 	parser = argparse.ArgumentParser(description="Generate booking jobs for campsite reservations.")
 
 	parser.add_argument("--sites", required=True, help="Comma-separated list of site IDs (e.g., F143,E119)")
-	parser.add_argument("--start_date", required=True, help="Start date in YYYY-MM-DD format")
+	parser.add_argument("--start_date", required=True, help="Start date in MM/DD/YYYY format")
 	parser.add_argument("--nights", type=int, required=True, help="Number of nights")
-	parser.add_argument("--people", type=int, required=True, help="Number of people")
-	parser.add_argument("--site_type", required=True, help="Site type (e.g., rv, tent)")
 	parser.add_argument("--time", type=str, required=True, help="Base time in HH:MM:SS.sss format (e.g., 18:05:00.000)")
 	parser.add_argument("--attempts", type=int, default=1, help="Number of attempts per site")
 	parser.add_argument("--delay", type=int, default=1, help="Number of milliseconds of delay between attempts")
@@ -124,7 +122,7 @@ def get_site_response_delay(website, attempts=5, timeout=3):
 		return None
 
 
-def book_assateague_site(site_id, start_date, end_date, nights, people, site_type, target_time_str, run_headless):
+def book_assateague_site(site_id, start_date, end_date, nights, target_time_str, run_headless):
 	"""
 	example use case:
 	book_assateague_site("G199", "2025-07-10", "2025-07-24", 14, 5, "rv", "18:04:59.500")
@@ -143,15 +141,14 @@ def book_assateague_site(site_id, start_date, end_date, nights, people, site_typ
     # https://parkreservations.maryland.gov/camping/assateague-state-park/r/campsiteDetails.do?arvdate=07/05/2027&contractCode=MD&parkId=380101&siteId=1136&encryptKey=&lengthOfStay=14#sls_a
 	base_url = "https://parkreservations.maryland.gov/camping/assateague-state-park/r/campsiteDetails.do?"
 	params = {
-        "advrdate": start_date, # MM/DD/YYYY
+        "arvdate": start_date, # MM/DD/YYYY
         "contractCode": "MD",
         "parkId": "380101",
         "siteId": site_id,
-        "encryptKey: "",
         "lengthOfStay": str(nights)
 	}
 
-	reservation_url = base_url + "&".join(f"{k}={v}" for k, v in params.items()) + "#sls_a"
+	reservation_url = base_url + "&".join(f"{k}={v}" for k, v in params.items()) + "&encryptKey=#sls_a"
 
 	# visit URL
 	page.goto(reservation_url)
@@ -209,7 +206,7 @@ def book_assateague_site(site_id, start_date, end_date, nights, people, site_typ
 	p.stop()
 	
 
-def build_booking_jobs(sites_to_try, start_date, nights, people, site_type, base_time, attempts, delay, run_headless):
+def build_booking_jobs(sites_to_try, start_date, nights, base_time, attempts, delay, run_headless):
 	"""
 	Builds a list of booking job tuples like:
 	("G199", "2025-07-10", "2025-07-24", 14, 5, "rv", "18:04:59.500")
@@ -218,7 +215,7 @@ def build_booking_jobs(sites_to_try, start_date, nights, people, site_type, base
 	jobs = []
 
 	# Calculate end date
-	end_date_dt = datetime.strptime(start_date, "%Y-%m-%d") + timedelta(days=nights)
+	end_date_dt = datetime.strptime(start_date, "%m/%d/%Y") + timedelta(days=nights)
 	end_date = end_date_dt.strftime("%Y-%m-%d")
 
 	# Parse base time string into datetime object (using today's date)
@@ -235,8 +232,6 @@ def build_booking_jobs(sites_to_try, start_date, nights, people, site_type, base
 				start_date,
 				end_date,
 				nights,
-				people,
-				site_type,
 				attempt_time_str,
 				run_headless
 			)
@@ -253,13 +248,11 @@ if __name__ == "__main__":
 	sites_to_try = args.sites.split(",")
 	start_date = args.start_date
 	nights = args.nights
-	people = args.people
-	site_type = args.site_type
 	base_time = args.time
 	attempts = args.attempts
 	delay = args.delay
 	run_headless = args.run_headless
-	booking_jobs = build_booking_jobs(sites_to_try, start_date, nights, people, site_type, base_time, attempts, delay, run_headless)
+	booking_jobs = build_booking_jobs(sites_to_try, start_date, nights, base_time, attempts, delay, run_headless)
 
 	processes = []
 
