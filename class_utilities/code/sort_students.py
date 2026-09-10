@@ -17,19 +17,30 @@ source myenv/bin/activate
 pip install ... 
 
 ## example script call:
-python3 ./script.py \
-    --var1 20
+python3 ./sort_students.py --sort_order "0,2" --file "/directory/file.csv"
 
 '''
 
 import argparse
 
+def student_sort(sort_order, file):
+    with open(file, "r") as current_file:
+        students = current_file.read().splitlines()
+        headers = students[0]
+        students = students[1:]
+        print(headers)
+        for col in sort_order.split(','):
+            students.sort(key = lambda x: x.split(',')[int(col)].strip())
+        return(students) 
+
 def parse_args():
     parser = argparse.ArgumentParser(description="")
-    parser.add_argument("--var1", type=int, required=True, help="variable description")
+    parser.add_argument("--sort_order", type=str, help="rows to sort and the priority order")
+    parser.add_argument("--file", type=str, help="file with student roster")
     return parser.parse_args()
 
-if __name__ = "__main__":
+if __name__ == "__main__":
     args = parse_args()
-    var1 = args.var1
-
+    students = student_sort(args.sort_order, args.file)
+    for s in students:
+        print(s)
