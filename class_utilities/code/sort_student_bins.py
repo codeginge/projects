@@ -8,16 +8,19 @@ this code will sort students by name, block, and class depending on the settings
 First use case is for sorting by class then by lastname for student bin organization. 
 
 inputs:
+sort_order - which columns to sort by and their order ex:"0,2" will sort by last name and then by block
 file - expected file type is a CSV file with the following header as the first line
     last, first, block, class
-
-Build python environment:
-python3 -m venv myenv
-source myenv/bin/activate
-pip install ... 
+bin_info - this is the information you know about the bins 
+    "<leters for cabinets>;<number of rows>;<number of columns>;[<bin_to_exclude>,<another_bin_to_exclude>,...]"
+output - file name for csv file output ex:"test.csv"
 
 ## example script call:
-python3 ./sort_students.py --sort_order "0,2" --file "/directory/file.csv"
+python3 ./sort_student_bins.py \
+    --sort_order "0,2" \
+    --file "../docs/dm_rosters_405.csv" \
+    --bin_info "JKL;5;5;['K-1-1','K-1-2','K-1-3','K-1-4','K-1-5']" \
+    --output "../../../Desktop/student_bin_locations.csv"
 
 '''
 
