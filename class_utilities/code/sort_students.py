@@ -21,7 +21,7 @@ python3 ./sort_students.py --sort_order "0,2" --file "/directory/file.csv"
 
 '''
 
-import argparse
+import argparse, csv
 
 def create_bins(args):
     [letters, rows, columns, exclude_bins] = args.bin_info.split(';')
@@ -49,11 +49,16 @@ def parse_args():
     parser.add_argument("--sort_order", type=str, help="rows to sort and the priority order")
     parser.add_argument("--file", type=str, help="file with student roster")
     parser.add_argument("--bin_info", type=str, help="letters, rows, columns, bins to exclude ex: IJKL,5,5,['k-1-1','k-1-2','k-1-3','k-1-4','k-1-5']")
+    parser.add_argument("--output", type=str, help="file to output to")
     return parser.parse_args()
 
 if __name__ == "__main__":
     args = parse_args()
     students = student_sort(args)
     bins = create_bins(args)
-    for index, s in enumerate(students):
-        print(f"{s} ------ {bins[index]}")
+    with open(args.output, "w", newline="", encoding="utf-8") as file_output:
+        writer = csv.writer(file_output)
+        for index, s in enumerate(students):
+            [last, first, block, subject] = s.split(',')
+            student_data = [last, first, block, subject, bins[index]]
+            writer.writerow(student_data)
