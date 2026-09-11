@@ -58,6 +58,8 @@ if __name__ == "__main__":
     bins = create_bins(args)
     with open(args.output, "w", newline="", encoding="utf-8") as file_output:
         writer = csv.writer(file_output)
+        header = ["FIRST","LAST","BLOCK","SUBJECT","BIN"]
+        writer.writerow(header)
         for index, s in enumerate(students):
             [last, first, block, subject] = s.split(',')
             student_data = [last, first, block, subject, bins[index]]
