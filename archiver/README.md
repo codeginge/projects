@@ -30,3 +30,45 @@ MEDIA TYPES:
     -photos
     -videos
 
+SEARCH TERMS:
+-date
+    -month
+    -day
+    -year
+-person
+-activity
+-location
+-type
+    -video
+    -image
+    -audio
+    -pdf
+
+DATA TABLES: 
+Rule: all location identifiers are infinitely expandable in a grid pattern 
+
+Physical Locations (PL)
+Rule: <room decimal><cabinet letter><row number><column letter><inner row number><inner column letter>, tags
+example for room 0, cabinet A, row 1, column B, cd storage:
+    [location, tags
+    "0A1B", "type:cd"
+    "0A1C", "type:cd"]
+
+Room List (RL)
+Rule: as you add rooms they go up cronologically in decimal
+    [room number, tags
+    0, "address:102_dogwood,room:garage,owner:jeb"
+    1, "address:102_dogwood,room:living_room,owner:kevin"]
+
+Item List (IL)
+Items can be added manually or in bulk using the code
+    [name, tags, physical location
+    "jeb_baby_picture", "date:1984,type:4x6photo","2B13AA"
+    "in_a_sentimental_mood","type:cd,date:1935,artist:Duke_Ellington","0A1F"
+    ]
+
+IDS:
+constructed by both phsyical and digital locations
+id: physical%digital
+-physical: room-cabinet-row-bin-section
+-digital: name-date-type-tag-
