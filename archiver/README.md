@@ -3,12 +3,14 @@ by: Michael Roberts
 last updated: 9/12/26
 
 GOAL:
-create an organization system for media that holds the digital location along with the physical location of the media such that it can be searched, rereived and returned by anyone.
+create an archival system to store and reteive media items. this archive will connect the digital and physical 
+locations to user defined context tags. when searched, the user will get physical and digital media locations
+along with all of the information that was entered in the archival process. 
 
 CONSTRAINTS:
--no two media items can share the same id
--every id holds within it the physical and digital locations
--search can be run on media name, location, and other user defined tags
+-search archive by name, tag, or location
+-search query returns item name, thumbnail, physical location, digital location, and tags
+-adding to archive is straight forward
 
 MEDIA TYPES:
 -physical
@@ -72,4 +74,7 @@ these functions are used to build the RL, PL and add to the IL.
 add_rooms(room_names)
 add_locations(room, cabinet, rows, columns, rows, columns, tags)
 add_items()
+
+TAGS:
+these are used to add detail to rooms, physical locations, and items. tags are an infinately expandable list
 
