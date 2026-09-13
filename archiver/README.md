@@ -47,18 +47,18 @@ SEARCH TERMS:
 DATA TABLES: 
 Rule: all location identifiers are infinitely expandable in a grid pattern 
 
+Room List (RL)
+Rule: as you add rooms they go up cronologically in decimal
+    [room number, tags
+    0, "address:102_dogwood,room:garage,owner:jeb"
+    1, "address:102_dogwood,room:living_room,owner:kevin"]
+
 Physical Locations (PL)
 Rule: <room decimal><cabinet letter><row number><column letter><inner row number><inner column letter>, tags
 example for room 0, cabinet A, row 1, column B, cd storage:
     [location, tags
     "0A1B", "type:cd"
     "0A1C", "type:cd"]
-
-Room List (RL)
-Rule: as you add rooms they go up cronologically in decimal
-    [room number, tags
-    0, "address:102_dogwood,room:garage,owner:jeb"
-    1, "address:102_dogwood,room:living_room,owner:kevin"]
 
 Item List (IL)
 Items can be added manually or in bulk using the code
@@ -67,8 +67,9 @@ Items can be added manually or in bulk using the code
     "in_a_sentimental_mood","type:cd,date:1935,artist:Duke_Ellington","0A1F"
     ]
 
-IDS:
-constructed by both phsyical and digital locations
-id: physical%digital
--physical: room-cabinet-row-bin-section
--digital: name-date-type-tag-
+FUNCTIONS:
+these functions are used to build the RL, PL and add to the IL. 
+add_rooms(room_names)
+add_locations(room, cabinet, rows, columns, rows, columns, tags)
+add_items()
+
