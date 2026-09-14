@@ -42,7 +42,6 @@ def student_sort(args):
         students = current_file.read().splitlines()
         headers = students[0]
         students = students[1:]
-        print(headers)
         for col in args.sort_order.split(','):
             students.sort(key = lambda x: x.split(',')[int(col)].strip())
         return(students) 
