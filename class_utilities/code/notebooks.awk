@@ -1,5 +1,5 @@
 # ----------------------------------------------
-# usage: awk -v notes=1 -f notebooks.awk notebooks_data.txt
+# usage: awk -v n=1 -v d="MM/DD" -v p="person_name" -f notebooks.awk data.txt
 # ----------------------------------------------
 
 BEGIN {
@@ -16,12 +16,13 @@ $0 ~ /NOTEBOOK_DATA_BELOW/ {
     if (started == 1) {
         if ($1 ~ /^[0-1][0-9]\/[0-3][0-9]/) {
             print "notebook check " $1
+            date = $1
         }
         else if ($1 !="") {
             mistake_count = gsub(/(UOP|TCU|TCF|OLF|missing|RLF|DLF)/, "&", $2)
             print $1 " - " 9 - mistake_count 
-            if (notes == 1) {
-                print "\n" $2 "\n"
+            if (n == 1) { 
+                print $2 "\n"
             }
         }
     }
