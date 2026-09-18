@@ -15,18 +15,22 @@ CONSTRAINTS:
 MEDIA TYPES:
 -physical
     -photos
-    -slides
-    -negatives
-    -drawings
-    -cassets
-    -vhf tapes
-    -dvd
-    -blueray
-    -records
-    -cds
-    -reel to reel
-    -notebooks
-    -books
+        -4x6 photos
+        -slides
+        -negatives
+    -paper
+        -drawings
+        -notebooks
+        -books
+    -audio
+        -cds
+        -records
+        -cassets
+        -reel to reel
+    -video
+        -vhf tapes
+        -dvd
+        -blueray
 -digital
     -pdf
     -photos
