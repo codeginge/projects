@@ -1,5 +1,5 @@
 # ----------------------------------------------
-# usage: awk -v n=1 -v d="MM/DD" -v s="student" -f notebooks.awk data.txt
+# usage: awk -v n=1 -v d="MM/DD" -v s="student_name" -f notebooks.awk data.txt
 # ----------------------------------------------
 
 BEGIN {
