@@ -5,6 +5,7 @@
 BEGIN {
     FS = ","
     started = 0
+    first_in_series = 1
 }
 
 $0 ~ /NOTEBOOK_DATA_BELOW/ {
@@ -13,6 +14,16 @@ $0 ~ /NOTEBOOK_DATA_BELOW/ {
 }
 
 {
+    if (started == 0) {
+        if ($3 != "" && $3 ~ "marking_variable") {
+            if (first_in_series == 1) {
+                mistake_pattern = $1
+                first_in_series = 0
+            } else {
+            mistake_pattern = mistake_pattern "|" $1 
+            }
+        }
+    }
     if (started == 1) {
         if ($1 ~ /^[0-1][0-9]\/[0-3][0-9]/) {
             print "notebook check " $1
@@ -24,12 +35,13 @@ $0 ~ /NOTEBOOK_DATA_BELOW/ {
             if (d != "" && data_date !~ d){
                 show_data = 0
             }
+
             if (s != "" && $1 !~ s){
                 show_data = 0
             }
 
             if (show_data == 1) {
-                mistake_count = gsub(/(UOP|TCU|TCF|OLF|missing|RLF|DLF)/, "&", $2)
+                mistake_count = gsub(mistake_pattern, "&", $2)
                 print $1 " - " 9 - mistake_count 
                 if (n == 1) { 
                     print $2 "\n"
