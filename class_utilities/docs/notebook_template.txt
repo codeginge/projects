@@ -1,0 +1,30 @@
+GRADING DATA
+POINTS, 9
+F, Formating errors
+NB, notebook
+NBF, notebook formatting errors, marking_variable
+NS, notes
+NSF, notes formatting errors, marking_variable
+PN, page numbers
+OL, observation log
+OLF, observation log formatting errors, marking_variable
+RL, research log
+RLF, research log formatting errors, marking_variable
+NL, not legible, marking_variable
+ML, mostly ledgible, marking_variable
+VL, very legible
+TC, tables of contents
+TCU, table of contents needs to be updated, marking_variable
+TCF, table ot contents needs formatting, marking_variable
+p, page
+RP, ripped page, marking_variable
+UOP, use of pen, marking_variable
+MIS, missing something, marking_variable
+
+NOTEBOOK_DATA_BELOW
+
+09/17
+student one, OLF p7. TCU
+student one, TCU nice work on blah blah.
+student one, TCU update formatting please.
+student one, TCU MIS PN for all pages.
