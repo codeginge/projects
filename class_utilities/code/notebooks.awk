@@ -58,7 +58,6 @@ $0 ~ /NOTEBOOK_DATA_BELOW/ {
     }
     if (started == 1) {
         if ($1 ~ /^[0-1][0-9]\/[0-3][0-9]/) {
-            print "Notebook Check " $1
             data_date = $1
         }
         else if ($1 !="") {
@@ -74,7 +73,7 @@ $0 ~ /NOTEBOOK_DATA_BELOW/ {
 
             if (show_data == 1) {
                 mistake_count = gsub(mistake_pattern, "&", $2)
-                print $1 " - " points - mistake_count 
+                print data_date " - " $1 " - " points - mistake_count 
                 if (n == 1) { 
                     print $2 "\n"
                 }
