@@ -23,7 +23,7 @@ def parse_args():
     parser.add_argument("--var1", type=int, required=True, help="variable description")
     return parser.parse_args()
 
-if __name__ = "__main__":
+if __name__ == "__main__":
     args = parse_args()
     var1 = args.var1
 
