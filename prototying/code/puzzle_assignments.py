@@ -4,6 +4,10 @@ by: Michael Roberts
 last updated: 09/23/26
 
 ## code description:
+this code creates up to a 26x10 puzzle, assigns students to each puzzle piece, and assigns 
+ownership of the sides to students. once ownership is established a visual is created.
+
+TODO
 + build puzzle matrix
 + build shared sides list by checking each puzzle piece and adding LRTB neighbors (left,right,top,bottom) 
 + randomly assign puzzle pieces to students. pieces with the most neighbors first 
@@ -96,7 +100,6 @@ def assign_sides(args, assigned_students, shared_sides):
         loop_iterations += 1
         if loop_iterations > match_attempts:
             student_index += 1
-            loop_iterations = 0 
     return assigned_students
 
 def match_distribution_criteria(args, assigned_students):
@@ -116,7 +119,31 @@ def match_neighbor_criteria(args, assigned_students):
     match_neighbor_criteria = True
     return match_neighbor_criteria
 
-def draw_puzzle(args, assigned_students):
+def draw_puzzle(args, assigned_students, puzzle_pieces):
+    print("start")
+    puzzle_length = len(puzzle_pieces)
+    for index, p in enumerate(puzzle_pieces):
+        print(p)
+        owner, right_owner, bottom_owner = None, None, None
+        for s in assigned_students:
+            for data in s.split(","):
+                if (len(data) == 2 and p in data):
+                    owner = s.split(",")[0]
+                if index + 1 < puzzle_length:
+                    right_piece = f"{p}{puzzle_pieces[index + 1]}"
+                    if (right_piece in data): 
+                        right_owner = s.split(",")[0]
+                if index + args.width < puzzle_length:
+                    bottom_piece = f"{p}{puzzle_pieces[index + args.width]}"
+                    if (bottom_piece in data): ############## LEFT OFF HERE - index out of range
+                        bottom_owner = s.split(",")[0]
+        grid_coordinates = p
+        print(f"piece: {grid_coordinates} | owner: {owner} | R: {right_owner} | B: {bottom_owner}")
+        draw_puzzle_piece(grid_coordinates, owner, right_owner, bottom_owner)
+    return True
+
+def draw_puzzle_piece(grid_coordinates, owner, right_owner, bottom_owner):
+    #print(f"piece: {grid_coordinates} | owner: {owner} | R: {right_owner} | B: {bottom_owner}")
     return True
 
 def parse_args():
@@ -134,13 +161,14 @@ if __name__ == "__main__":
     solution = False
     while not solution:
         puzzle_pieces = build_puzzle(args)
-        print(puzzle_pieces)
+        #print(puzzle_pieces)
         shared_sides = build_shared_sides(args, puzzle_pieces)
-        print(shared_sides)
+        #print(shared_sides)
         assigned_students = assign_pieces(args, puzzle_pieces)
-        print(assigned_students)
+        #print(assigned_students)
         assigned_students = assign_sides(args, assigned_students, shared_sides)
-        print(assigned_students)
+        #print(assigned_students)
         if (match_distribution_criteria(args, assigned_students) and match_neighbor_criteria(args, assigned_students)):
             solution = True
-    draw_puzzle(args, assigned_students)
+    print(assigned_students)
+    draw_puzzle(args, assigned_students, build_puzzle(args))
