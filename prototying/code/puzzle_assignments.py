@@ -93,7 +93,7 @@ def assign_sides(args, assigned_students, shared_sides):
             if len(item) == 2:
                 student_puzzle_pieces =f"{student_puzzle_pieces}{item}"
         if (side_to_assign[:2] in student_puzzle_pieces or side_to_assign[-2:] in student_puzzle_pieces):
-            #print(f"{side_to_assign[:2]} or {side_to_assign[-2:]} in {student_puzzle_pieces}")
+            if args.debug: print(f"{side_to_assign[:2]} or {side_to_assign[-2:]} in {student_puzzle_pieces}")
             assigned_students[student_index] = f"{assigned_students[student_index]},{side_to_assign}"
             student_index += 1
             shared_sides.remove(side_to_assign)
@@ -126,29 +126,29 @@ def match_neighbor_criteria(args, assigned_students):
                 pieces_data.append(data)
             if len(data) == 4:
                 sides_data.append(data)
-        #print(f"current student: {student} | sides: {sides_data} | pieces {pieces_data}")
+        if args.debug: print(f"current student: {student} | sides: {sides_data} | pieces {pieces_data}")
         for side in sides_data:
             for piece in pieces_data:
                 if piece in side:
                     side_to_check = side.replace(piece, "")
-                    #print(f"{side_to_check}")
+                    if args.debug: print(f"{side_to_check}")
                     for possible_neighbor in assigned_students:
                         current_possible_neighbor = possible_neighbor.split(",")[0]
-                        #print(f"current neighbor check: {current_possible_neighbor}")
+                        if args.debug: print(f"current neighbor check: {current_possible_neighbor}")
                         for neighbor_data in possible_neighbor.split(",")[1:]:
                             if (len(neighbor_data) == 4 and side_to_check in neighbor_data):
-                                #print(f" neighbor to add: {current_possible_neighbor}")
+                                if args.debug: print(f" neighbor to add: {current_possible_neighbor}")
                                 if current_possible_neighbor not in distinct_neighbors:
                                     distinct_neighbors.append(current_possible_neighbor) 
         neighbor_counts.append(len(distinct_neighbors))
-        #print(f"student: {student} | neighbors: {distinct_neighbors} | neighbor counts: {neighbor_counts}")
-    #print(neighbor_counts)
+        if args.debug: print(f"student: {student} | neighbors: {distinct_neighbors} | neighbor counts: {neighbor_counts}")
+    if args.debug: print(neighbor_counts)
     if min(neighbor_counts) >= args.neighbor_count:
         match_neighbor_criteria = True
     return match_neighbor_criteria
 
 def draw_puzzle(args, assigned_students, puzzle_pieces):
-    print("start")
+    if args.debug: print("start")
     puzzle_length = len(puzzle_pieces)
     for index, p in enumerate(puzzle_pieces):
         owner, right_owner, bottom_owner, draw_top, draw_left = None, None, None, None, None
@@ -167,11 +167,11 @@ def draw_puzzle(args, assigned_students, puzzle_pieces):
                     if (bottom_piece in data): 
                         bottom_owner = s.split(",")[0]
         grid_coordinates = p
-        draw_puzzle_piece(grid_coordinates, owner, right_owner, bottom_owner, draw_top, draw_left)
+        draw_puzzle_piece(args, grid_coordinates, owner, right_owner, bottom_owner, draw_top, draw_left)
     return True
 
-def draw_puzzle_piece(grid_coordinates, owner, right_owner, bottom_owner, draw_top, draw_left):
-    print(f"piece: {grid_coordinates} | owner: {owner} | R: {right_owner} | B: {bottom_owner} | T: {draw_top} | L: {draw_left}")
+def draw_puzzle_piece(args, grid_coordinates, owner, right_owner, bottom_owner, draw_top, draw_left):
+    if args.debug: print(f"piece: {grid_coordinates} | owner: {owner} | R: {right_owner} | B: {bottom_owner} | T: {draw_top} | L: {draw_left}")
     return True
 
 def parse_args():
@@ -182,6 +182,7 @@ def parse_args():
     parser.add_argument("--dist", type=int, required=True, help="side distribution +- error")
     parser.add_argument("--neighbor_count", type=int, required=True, help="number of repeat neighbors")
     parser.add_argument("--match_attempts", type=int, required=False, help="attempts to match a side to a student before going to next student.")
+    parser.add_argument("--debug", type=bool, required=False, help="prints debug statements")
     return parser.parse_args()
 
 if __name__ == "__main__":
@@ -189,13 +190,13 @@ if __name__ == "__main__":
     solution = False
     while not solution:
         puzzle_pieces = build_puzzle(args)
-        #print(puzzle_pieces)
+        if args.debug: print(puzzle_pieces)
         shared_sides = build_shared_sides(args, puzzle_pieces)
-        #print(shared_sides)
+        if args.debug: print(shared_sides)
         assigned_students = assign_pieces(args, puzzle_pieces)
-        #print(assigned_students)
+        if args.debug: print(assigned_students)
         assigned_students = assign_sides(args, assigned_students, shared_sides)
-        #print(assigned_students)
+        if args.debug: print(assigned_students)
         distribution_criteria = match_distribution_criteria(args, assigned_students)
         neighbor_criteria = match_neighbor_criteria(args, assigned_students)
         if (distribution_criteria and neighbor_criteria):
