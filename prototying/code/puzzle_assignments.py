@@ -116,15 +116,44 @@ def match_distribution_criteria(args, assigned_students):
     return match_distribution_criteria
 
 def match_neighbor_criteria(args, assigned_students):
-    match_neighbor_criteria = True
+    match_neighbor_criteria = False
+    neighbor_counts = []
+    for s in assigned_students:
+        distinct_neighbors, pieces_data, sides_data = [], [], []
+        student = s.split(",")[0]
+        for data in s.split(",")[1:]:
+            if len(data) == 2:
+                pieces_data.append(data)
+            if len(data) == 4:
+                sides_data.append(data)
+        #print(f"current student: {student} | sides: {sides_data} | pieces {pieces_data}")
+        for side in sides_data:
+            for piece in pieces_data:
+                if piece in side:
+                    side_to_check = side.replace(piece, "")
+                    #print(f"{side_to_check}")
+                    for possible_neighbor in assigned_students:
+                        current_possible_neighbor = possible_neighbor.split(",")[0]
+                        #print(f"current neighbor check: {current_possible_neighbor}")
+                        for neighbor_data in possible_neighbor.split(",")[1:]:
+                            if (len(neighbor_data) == 4 and side_to_check in neighbor_data):
+                                #print(f" neighbor to add: {current_possible_neighbor}")
+                                if current_possible_neighbor not in distinct_neighbors:
+                                    distinct_neighbors.append(current_possible_neighbor) 
+        neighbor_counts.append(len(distinct_neighbors))
+        #print(f"student: {student} | neighbors: {distinct_neighbors} | neighbor counts: {neighbor_counts}")
+    #print(neighbor_counts)
+    if min(neighbor_counts) >= args.neighbor_count:
+        match_neighbor_criteria = True
     return match_neighbor_criteria
 
 def draw_puzzle(args, assigned_students, puzzle_pieces):
     print("start")
     puzzle_length = len(puzzle_pieces)
     for index, p in enumerate(puzzle_pieces):
-        print(p)
-        owner, right_owner, bottom_owner = None, None, None
+        owner, right_owner, bottom_owner, draw_top, draw_left = None, None, None, None, None
+        if "A" in p: draw_top = True
+        if "0" in p: draw_left = True
         for s in assigned_students:
             for data in s.split(","):
                 if (len(data) == 2 and p in data):
@@ -135,15 +164,14 @@ def draw_puzzle(args, assigned_students, puzzle_pieces):
                         right_owner = s.split(",")[0]
                 if index + args.width < puzzle_length:
                     bottom_piece = f"{p}{puzzle_pieces[index + args.width]}"
-                    if (bottom_piece in data): ############## LEFT OFF HERE - index out of range
+                    if (bottom_piece in data): 
                         bottom_owner = s.split(",")[0]
         grid_coordinates = p
-        print(f"piece: {grid_coordinates} | owner: {owner} | R: {right_owner} | B: {bottom_owner}")
-        draw_puzzle_piece(grid_coordinates, owner, right_owner, bottom_owner)
+        draw_puzzle_piece(grid_coordinates, owner, right_owner, bottom_owner, draw_top, draw_left)
     return True
 
-def draw_puzzle_piece(grid_coordinates, owner, right_owner, bottom_owner):
-    #print(f"piece: {grid_coordinates} | owner: {owner} | R: {right_owner} | B: {bottom_owner}")
+def draw_puzzle_piece(grid_coordinates, owner, right_owner, bottom_owner, draw_top, draw_left):
+    print(f"piece: {grid_coordinates} | owner: {owner} | R: {right_owner} | B: {bottom_owner} | T: {draw_top} | L: {draw_left}")
     return True
 
 def parse_args():
@@ -168,7 +196,9 @@ if __name__ == "__main__":
         #print(assigned_students)
         assigned_students = assign_sides(args, assigned_students, shared_sides)
         #print(assigned_students)
-        if (match_distribution_criteria(args, assigned_students) and match_neighbor_criteria(args, assigned_students)):
+        distribution_criteria = match_distribution_criteria(args, assigned_students)
+        neighbor_criteria = match_neighbor_criteria(args, assigned_students)
+        if (distribution_criteria and neighbor_criteria):
             solution = True
     print(assigned_students)
     draw_puzzle(args, assigned_students, build_puzzle(args))
