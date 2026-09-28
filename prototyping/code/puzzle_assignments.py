@@ -36,8 +36,7 @@ source myenv/bin/activate
 pip install  
 
 ## example script call:
-python3 ./script.py \
-    --var1 20
+python3 ./puzzle_assignments.py --width 7 --height 7 --students "jim,bob,joe,jeff,rich,christian,luke,brian" --dist 1 --neighbor_count 5 --match_attempts 300
 
 '''
 
@@ -59,6 +58,7 @@ def build_shared_sides(args, puzzle_pieces):
             right_side = f"{p}{puzzle_pieces[index + 1]}"
             shared_sides.append(right_side)
         # check bottom
+        ###### HERE - why does this break on non square runs like 4x7 or 7x4?
         if (chr(args.height + 65 - 1) not in p):
             bottom_side = f"{p}{puzzle_pieces[index + args.width]}"
             shared_sides.append(bottom_side)
