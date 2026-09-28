@@ -93,7 +93,6 @@ def assign_sides(args, assigned_students, shared_sides):
             if len(item) == 2:
                 student_puzzle_pieces =f"{student_puzzle_pieces}{item}"
         if (side_to_assign[:2] in student_puzzle_pieces or side_to_assign[-2:] in student_puzzle_pieces):
-            if args.debug: print(f"{side_to_assign[:2]} or {side_to_assign[-2:]} in {student_puzzle_pieces}")
             assigned_students[student_index] = f"{assigned_students[student_index]},{side_to_assign}"
             student_index += 1
             shared_sides.remove(side_to_assign)
@@ -126,30 +125,37 @@ def match_neighbor_criteria(args, assigned_students):
                 pieces_data.append(data)
             if len(data) == 4:
                 sides_data.append(data)
-        if args.debug: print(f"current student: {student} | sides: {sides_data} | pieces {pieces_data}")
         for side in sides_data:
             for piece in pieces_data:
                 if piece in side:
                     side_to_check = side.replace(piece, "")
-                    if args.debug: print(f"{side_to_check}")
                     for possible_neighbor in assigned_students:
                         current_possible_neighbor = possible_neighbor.split(",")[0]
-                        if args.debug: print(f"current neighbor check: {current_possible_neighbor}")
                         for neighbor_data in possible_neighbor.split(",")[1:]:
                             if (len(neighbor_data) == 4 and side_to_check in neighbor_data):
-                                if args.debug: print(f" neighbor to add: {current_possible_neighbor}")
                                 if current_possible_neighbor not in distinct_neighbors:
                                     distinct_neighbors.append(current_possible_neighbor) 
         neighbor_counts.append(len(distinct_neighbors))
         if args.debug: print(f"student: {student} | neighbors: {distinct_neighbors} | neighbor counts: {neighbor_counts}")
-    if args.debug: print(neighbor_counts)
     if min(neighbor_counts) >= args.neighbor_count:
         match_neighbor_criteria = True
     return match_neighbor_criteria
 
 def draw_puzzle(args, assigned_students, puzzle_pieces):
     if args.debug: print("start")
+    # turtle pen setup
+    piece_width, piece_height, font_size, line_weight, line_color, scale_border_up = 110, 110, 12, 1, "#000000", 1.05
+    piece_info = piece_width, piece_height, font_size, line_weight, line_color, scale_border_up
+    pen = turtle.Turtle()
+    pen.up
+    pen.speed(10)
+    pen.pensize(line_weight)
+    pen.pencolor(line_color)
     puzzle_length = len(puzzle_pieces)
+    screen = turtle.Screen()
+    screen.setup(width=piece_width*args.width*scale_border_up, height=piece_height*args.height*scale_border_up)
+    screen.setworldcoordinates(0,-piece_height*args.height*scale_border_up,piece_width*args.width*scale_border_up,0)
+    # draw boxes
     for index, p in enumerate(puzzle_pieces):
         owner, right_owner, bottom_owner, draw_top, draw_left = None, None, None, None, None
         if "A" in p: draw_top = True
@@ -167,11 +173,44 @@ def draw_puzzle(args, assigned_students, puzzle_pieces):
                     if (bottom_piece in data): 
                         bottom_owner = s.split(",")[0]
         grid_coordinates = p
-        draw_puzzle_piece(args, grid_coordinates, owner, right_owner, bottom_owner, draw_top, draw_left)
+        draw_puzzle_piece(args, grid_coordinates, owner, right_owner, bottom_owner, draw_top, draw_left, pen, piece_info)
+    turtle.done()
     return True
 
-def draw_puzzle_piece(args, grid_coordinates, owner, right_owner, bottom_owner, draw_top, draw_left):
+def draw_puzzle_piece(args, grid_coordinates, owner, right_owner, bottom_owner, draw_top, draw_left, pen, piece_info):
+    piece_width, piece_height, font_size, line_weight, line_color, scale_border_up = piece_info
     if args.debug: print(f"piece: {grid_coordinates} | owner: {owner} | R: {right_owner} | B: {bottom_owner} | T: {draw_top} | L: {draw_left}")
+    x = int(grid_coordinates[1])
+    y = int(ord(grid_coordinates[0]) - 65)
+    # draw box
+    x_box, y_box = x * piece_width, -y * piece_height
+    pen.goto(x_box,y_box)
+    if draw_top:pen.down()
+    pen.goto(x_box + piece_width, y_box)
+    pen.up()
+    pen.down()
+    pen.goto(x_box + piece_width, y_box - piece_height)
+    pen.goto(x_box, y_box - piece_height)
+    pen.up()
+    if draw_left:pen.down()
+    pen.goto(x_box, y_box)
+    pen.up()
+    pen.goto(x_box + piece_width/2, y_box - piece_height/2)
+    pen.down()
+    pen.write(f"{grid_coordinates} \n{owner}")
+    pen.up()
+    if right_owner:
+        pen.up()
+        pen.goto(x_box + piece_width, y_box - piece_height/2)
+        pen.down()
+        pen.write(right_owner)
+        pen.up()
+    if bottom_owner:
+        pen.up()
+        pen.goto(x_box + piece_width/2, y_box - piece_height)
+        pen.down()
+        pen.write(bottom_owner)
+        pen.up()
     return True
 
 def parse_args():
