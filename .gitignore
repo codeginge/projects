@@ -6,3 +6,5 @@ camp_res/
 2_arm_problem_space.png
 *test*
 dm_*
+robotics/code/auto_coder/llama.cpp
+robotics/code/auto_coder/models
