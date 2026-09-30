@@ -22,3 +22,5 @@ mkdir -p /home/$REAL_USER/Pictures/screenshots
 # Take the screenshot
 /usr/bin/grim /home/$REAL_USER/Pictures/screenshots/${REAL_USER}_$(date +%Y-%m-%d_%H-%M-%S).png
 
+# delete old screenshots that are older than 1 hour
+find "$TARGET_DIR" -type f -name "*.png" -mmin +60 -delete
