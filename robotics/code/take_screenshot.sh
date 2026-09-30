@@ -20,5 +20,5 @@ export WAYLAND_DISPLAY=${WAYLAND_DISPLAY:-wayland-1}
 mkdir -p /home/$REAL_USER/Pictures/screenshots
 
 # Take the screenshot
-/usr/bin/grim /home/$REAL_USER/Pictures/screenshots/$(date +%Y-%m-%d_%H-%M-%S).png
+/usr/bin/grim /home/$REAL_USER/Pictures/screenshots/${REAL_USER}_$(date +%Y-%m-%d_%H-%M-%S).png
 
