@@ -16,11 +16,15 @@ export WAYLAND_DISPLAY=$(ls /run/user/$USER_ID/wayland-* 2>/dev/null | head -n 1
 # Fallback defaults if the discovery fails
 export WAYLAND_DISPLAY=${WAYLAND_DISPLAY:-wayland-1}
 
+# Define the screenshot directory path
+TARGET_DIR="/home/$REAL_USER/Pictures/screenshots"
+
 # Make sure the saving directory exists
-mkdir -p /home/$REAL_USER/Pictures/screenshots
+mkdir -p "$TARGET_DIR"
 
-# Take the screenshot
-/usr/bin/grim /home/$REAL_USER/Pictures/screenshots/${REAL_USER}_$(date +%Y-%m-%d_%H-%M-%S).png
+# Take the screenshot with the username injected into the filename
+/usr/bin/grim "$TARGET_DIR/${REAL_USER}_$(date +%Y-%m-%d_%H-%M-%S).png"
 
-# delete old screenshots that are older than 1 hour
+# Delete screenshots in this folder that are older than 60 minutes
 find "$TARGET_DIR" -type f -name "*.png" -mmin +60 -delete
+
