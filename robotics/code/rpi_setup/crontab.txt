@@ -1,0 +1,1 @@
+* * * * * /home/user/Desktop/projects/robotics/code/rpi_setup/take_screenshot.sh
