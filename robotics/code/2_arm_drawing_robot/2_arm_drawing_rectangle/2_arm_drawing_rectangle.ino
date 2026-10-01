@@ -11,8 +11,8 @@ void setup() {
 
 void loop() {
   if (draw == 1) {
-    for (float x_pos = 3.0; x_pos > 0.5; x_pos -= 0.1) {
-      for (float y_pos = 3.0; y_pos > 0.5; y_pos -= 0.1) {
+    for (float x_pos = 2.0; x_pos > 0.5; x_pos -= 0.1) {
+      for (float y_pos = 2.0; y_pos > 0.5; y_pos -= 0.1) {
         x = x_pos, y = y_pos;
         theta_2 = acos((x*x + y*y - l1*l1 - l2*l2) / (2.0*l1*l2));
         theta_1 = (atan2(y,x) + atan2((l2*sin(theta_2)), (l1+l2*cos(theta_2))));
