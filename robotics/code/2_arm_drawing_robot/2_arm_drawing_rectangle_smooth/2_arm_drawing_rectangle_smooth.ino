@@ -14,7 +14,7 @@ void loop() {
   if (draw == 1) {
     for (float x_pos = 4.0; x_pos > 0.5; x_pos -= 0.1) {
       for (float y_pos = 4.0; y_pos > 0.5; y_pos -= 0.1) {
-        x = x_pos, y = ypos;
+        x = x_pos, y = y_pos;
         t2 = acos((x*x + y*y - l1*l1 - l2*l2) / (2.0*l1*l2));
         t1 = (atan2(y,x) + atan2((l2*sin(t2)), (l1+l2*cos(t2))));
         moveArm(t1, t2, st, move_time);
