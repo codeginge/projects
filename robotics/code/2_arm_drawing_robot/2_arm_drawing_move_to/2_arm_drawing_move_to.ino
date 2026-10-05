@@ -1,7 +1,7 @@
 #include <Servo.h>
 #include <math.h>
 int sm_pin1 = A0, sm_pin2 = A1, sm_min = 544, sm_max = 2400, move_time = 50, draw = 1;
-float t1 = 0.0, t2 = 0.0, l1 = 3.0, l2 = 3.0, x = 4.0, y = 0.0, ct1 = t1, ct2 = t2, st = 0.02, t1st, t2st, tdist;
+float t1 = 0.0, t2 = 0.0, l1 = 3.0, l2 = 3.0, x = 4.0, y = 0.0, xo = x, yo = y, ct1 = t1, ct2 = t2, st = 0.02, t1st, t2st, tdist;
 Servo servo_1, servo_2;
 
 void setup() {
@@ -14,7 +14,8 @@ void loop() {
   if (Serial.available() > 0) {
     x = Serial.parseFloat();
     y = Serial.parseFloat();
-    if (x == 0 && y == 0) {x = 4, y = 0; }
+    if (x == 0 && y == 0) {x = xo, y = yo; }
+    xo = x, yo = y; 
   }
   if (draw == 1) {
     t2 = acos((x*x + y*y - l1*l1 - l2*l2) / (2.0*l1*l2));
