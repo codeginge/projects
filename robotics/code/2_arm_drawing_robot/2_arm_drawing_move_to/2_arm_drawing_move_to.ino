@@ -1,7 +1,7 @@
 #include <Servo.h>
 #include <math.h>
 int sm_pin1 = A0, sm_pin2 = A1, sm_min = 544, sm_max = 2400, move_time = 50, draw = 1;
-float t1 = 0.0, t2 = 0.0, l1 = 3.0, l2 = 3.0, x = 4.0, y = 0.0, ct1 = t1, ct2 = t2, st = 0.02;
+float t1 = 0.0, t2 = 0.0, l1 = 3.0, l2 = 3.0, x = 4.0, y = 0.0, ct1 = t1, ct2 = t2, st = 0.02, t1st, t2st, tdist;
 Servo servo_1, servo_2;
 
 void setup() {
@@ -26,20 +26,18 @@ void loop() {
 }
 
 void moveArm(float t1, float t2, float step, int wait_ms) {
+  tdist = sqrt((t1 - ct1)*(t1 - ct1) + (t2 - ct2)*(t2 - ct2));
+  t1st = step*((t1 - ct1)/tdist), t2st = step*((t2 - ct2)/tdist); 
   while (ct1 != t1 || ct2 != t2) {
     if (abs(ct1 - t1) <= step) {
       ct1 = t1;
-    } else if (ct1 < t1) {
-      ct1 += step;
     } else {
-      ct1 -= step;
+      ct1 += t1st;
     }
     if (abs(ct2 - t2) <= step) {
       ct2 = t2;
-    } else if (ct2 < t2) {
-      ct2 += step;
     } else {
-      ct2 -= step;
+      ct2 += t2st;
     }
     servo_1.write(ct1 * RAD_TO_DEG);
     servo_2.write(ct2 * RAD_TO_DEG);    
