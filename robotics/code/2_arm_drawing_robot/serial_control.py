@@ -19,6 +19,12 @@ python3 ./serial_control.py
 
 import argparse, serial
 
+def connect_nano(args):
+    return True
+
+def cords_to_nano(args, x, y):
+    return True
+
 def parse_args():
     parser = argparse.ArgumentParser(description="")
     parser.add_argument("--var1", type=int, required=True, help="variable description")
@@ -26,4 +32,5 @@ def parse_args():
 
 if __name__ == "__main__":
     args = parse_args()
-
+    connect_nano(args)
+    cords_to_nano(args, 2, 2)
