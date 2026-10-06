@@ -10,15 +10,14 @@ move_to_cords.ino code to draw lines defined.
 Build python environment:
 python3 -m venv myenv
 source myenv/bin/activate
-pip install ... 
+pip install pyserial 
 
 ## example script call:
-python3 ./serial_control.py \
-    --var1 20
+python3 ./serial_control.py 
 
 '''
 
-import argparse
+import argparse, serial
 
 def parse_args():
     parser = argparse.ArgumentParser(description="")
@@ -27,5 +26,4 @@ def parse_args():
 
 if __name__ == "__main__":
     args = parse_args()
-    var1 = args.var1
 
