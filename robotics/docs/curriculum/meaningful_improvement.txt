@@ -1,0 +1,15 @@
+name: meaningful_improvement.txt
+last modified: 10/09/26
+
+GOAL:
+- break down current project into parts using a systems thinking viewpoint
+- define all inputs, outputs and current functionality for each part
+- build a functional diagram from the parts defined above
+- summarize current system functionality in detail
+- define 1+ specific and meaningful improvements for each of the following areas:
+    - mechanical ... (physical design)
+    - electrical ... (circuit design)
+    - logical ...... (code design)
+- design solutions for each improvement and create the following documents
+    - 3 minute presentation of improvements 
+    - 
