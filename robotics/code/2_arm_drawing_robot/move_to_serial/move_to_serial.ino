@@ -1,7 +1,9 @@
 #include <Servo.h>
 #include <math.h>
-int sm_pin1 = A0, sm_pin2 = A1, sm_min = 544, sm_max = 2400, move_time = 50, draw = 1;
-float t1 = 0.0, t2 = 0.0, l1 = 3.0, l2 = 3.0, x = 4.0, y = 0.0, xo = x, yo = y, ct1 = t1, ct2 = t2, st = 0.02, t1st, t2st, tdist;
+int move_time = 50, draw = 1; // movement specifics
+int sm_pin1 = A0, sm_pin2 = A1, sm_min = 544, sm_max = 2400; // servo details 
+float t1 = 0.0, t2 = 0.0, l1 = 3.0, l2 = 3.0, x = 4.0, y = 0.0; // physical and initial variables
+float xo = x, yo = y, ct1 = t1, ct2 = t2, st = 0.02, t1st, t2st, tdist; // temporary variables 
 Servo servo_1, servo_2;
 
 void setup() {
