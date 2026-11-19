@@ -1,0 +1,86 @@
+notebooking setup
+last updated: 11/19/26
+by: michael roberts
+
+PAGE DESIGNATIONS
+1. 1-6 table of contents (TC)
+2. 7-200 Logs
+    - date the upper left corner of the page in format MM/DD/YY
+	- odd page numbers in top right of right page  
+    - title every log
+
+RULES
+1. Table of contents is updated before you leave class
+2. Log formatting is followed
+3. All writing is done with a mechanical pencil
+4. No large erasures or strikeouts
+*note: Your notebook is a historical record containing your thoughts, this is not a list of answers
+
+LOG FORMATS
+observation log
+1. Subject
+Draw the subject of observation
+Write down and details about the subject that you know
+2. Observe
+Write three or more things you notice about you subject
+3. Question
+Ask three or more questions related to what you observed
+4. Predict
+Pretend you were the designer of the subject and answer the questions above
+
+research log
+1. goal
+Write down the goal for your research
+2. current knowledge
+Write down what you currently know about the subject
+3. Question Focus
+Come up with three questions that you hope to answer by the end of your research
+4. Notes
+Write down the information you are receiving as you try to answer the questions above
+Note where the information came from such that you can find it later 
+5. Conclusion
+Based on your notes, write the best answer you have to the three questions from the “Question Focus” section of the research log
+
+Project Log
+1. Current state of project
+Draw the current state of your project
+Write down all information you know about your current project and its state. How it functions, how complete it is, what is working well, what needs more attention, etc…
+2. Desired state of project
+Write down the desired end state of your project
+3. Next Steps
+Write down what you are going to do today to bring your project from the current state to the desired state 
+4. Notes
+Document what you are doing as you do it
+Brainstorming, drawings, new information, proposed solutions, new questions to ask, new directions for designs, failures, lessons learned and anything else that might come up during this project time is captured here
+5. End state
+Write down where you got to in your project
+
+Disassembly Log
+1. Assembly 
+Draw the full assembly that you are about to take apart
+Write down all information you know about the assembly
+2. Tool List
+Create a running list of every tool you used during the disassembly process
+3. Parts List
+Create a running list for each part of the assembly
+Each part needs to be given a part number and a name
+If there are multiple of a single part put the count in like this → (4x)
+4. Disassembly Steps
+Write down each action you took during the disassembly process
+5. Parts
+Go through your parts list and complete the following for each part
+Draw the part isometrically
+Measure and put in dimensions for x, y and z directions for the part
+Add one or more measurements to the drawing relating to an interesting feature of the part you drew
+Make sure that your drawings are large enough to see the important details of the part
+Make sure that the dimensions you have written down have units
+6. Assembly Steps
+Write down each steps you took during the reassembly process
+Steps must be in chronological order
+7. Assembly Diagram
+Draw an assembly diagram in exploded view
+Draw arrows to note how each piece fits into the pieces around it
+Make sure your drawings of each part are detailed enough to determine their orientation relative to the other parts in the assembly
+8. Post Assembly Notes
+Write down three or more notes about the assembly
+These notes should be related to new things you found out about the assembly that you did not know previously
